@@ -80,7 +80,7 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 	}
 	
 	private void initClientMessagePool() {
-		this.mMessagePool.registerMessage(FLAG_MESSAGE_MOVE_SPRITE, MoveSpriteServerMessage.class);
+		this.mMessagePool.registerMessage(FLAG_MESSAGE_MOVE_SPRITE, MoveSpriteClientMessage.class);
 	}
 	
 	@Override
