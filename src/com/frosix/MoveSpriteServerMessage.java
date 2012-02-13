@@ -23,7 +23,7 @@ public class MoveSpriteServerMessage extends ServerMessage {
 	}
 	@Override
 	public short getFlag() {
-		return ConstantStorage.FLAG_MESSAGE_CLIENT_MOVE_SPRITE;
+		return ConstantStorage.FLAG_MESSAGE_SERVER_MOVE_SPRITE;
 	}
 
 	@Override
