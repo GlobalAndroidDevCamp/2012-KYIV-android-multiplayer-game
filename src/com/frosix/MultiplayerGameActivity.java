@@ -58,6 +58,7 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 	@Override
 	protected void onCreate(Bundle pSavedInstanceState) {
 		super.onCreate(pSavedInstanceState);
+		initMessagePool();
 		this.mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		this.mServerMACAddress = BluetoothAdapter.getDefaultAdapter().getAddress();
 		if (this.mBluetoothAdapter == null) {
@@ -74,13 +75,10 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 		}
 	}
 	
-	private void initServerMessagePool() {
-		this.mMessagePool.registerMessage(FLAG_MESSAGE_MOVE_SPRITE, MoveSpriteServerMessage.class);
+	private void initMessagePool() {
+		this.mMessagePool.registerMessage(FLAG_MESSAGE_SERVER_MOVE_SPRITE, MoveSpriteServerMessage.class);
 		this.mMessagePool.registerMessage(FLAG_MESSAGE_SERVER_CONNECTION_CLOSE, ConnectionCloseServerMessage.class);
-	}
-	
-	private void initClientMessagePool() {
-		this.mMessagePool.registerMessage(FLAG_MESSAGE_MOVE_SPRITE, MoveSpriteClientMessage.class);
+		this.mMessagePool.registerMessage(FLAG_MESSAGE_CLIENT_MOVE_SPRITE, MoveSpriteClientMessage.class);
 	}
 	
 	@Override
@@ -134,7 +132,7 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 	}
 	
 	private void sendClientMessage(float x, float y) {
-		final MoveSpriteClientMessage moveFaceServerMessage = (MoveSpriteClientMessage) mMessagePool.obtainMessage(FLAG_MESSAGE_MOVE_SPRITE);
+		final MoveSpriteClientMessage moveFaceServerMessage = (MoveSpriteClientMessage) mMessagePool.obtainMessage(FLAG_MESSAGE_CLIENT_MOVE_SPRITE);
 		moveFaceServerMessage.set(0, x, y);
 
 		try {
@@ -147,7 +145,7 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 	}
 	
 	private void sendServerMessage(float x, float y) {
-		final MoveSpriteServerMessage moveFaceServerMessage = (MoveSpriteServerMessage) mMessagePool.obtainMessage(FLAG_MESSAGE_MOVE_SPRITE);
+		final MoveSpriteServerMessage moveFaceServerMessage = (MoveSpriteServerMessage) mMessagePool.obtainMessage(FLAG_MESSAGE_SERVER_MOVE_SPRITE);
 		moveFaceServerMessage.set(0, x, y);
 
 		try {
@@ -164,7 +162,6 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 	
 
 	private void initServer() {
-		initServerMessagePool();
 		this.mServerMACAddress = BluetoothAdapter.getDefaultAdapter().getAddress();
 		try {
 			this.mBluetoothSocketServer = new MessageReceivingBluetoothSocketServer<BluetoothSocketConnectionClientConnector>(ConstantStorage.MY_UUID, new ClientConnectorListener(), new ServerStateListener()) {
@@ -180,7 +177,7 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 				}
 			};
 			
-			this.mBluetoothSocketServer.registerClientMessage(FLAG_MESSAGE_MOVE_SPRITE, MoveSpriteClientMessage.class, new IClientMessageHandler<BluetoothSocketConnection>() {
+			this.mBluetoothSocketServer.registerClientMessage(FLAG_MESSAGE_CLIENT_MOVE_SPRITE, MoveSpriteClientMessage.class, new IClientMessageHandler<BluetoothSocketConnection>() {
 				@Override
 				public void onHandleMessage(
 						ClientConnector<BluetoothSocketConnection> pClientConnector,
@@ -197,7 +194,6 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 	}
 	
 	private void initClient() {
-		initClientMessagePool();
 		try {
 			this.mServerConnector = new BluetoothSocketConnectionServerConnector(new BluetoothSocketConnection(this.mBluetoothAdapter, this.mServerMACAddress, MY_UUID), new ExampleServerConnectorListener());
 
@@ -208,7 +204,7 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 				}
 			});
 
-			this.mServerConnector.registerServerMessage(FLAG_MESSAGE_MOVE_SPRITE, MoveSpriteServerMessage.class, new IServerMessageHandler<BluetoothSocketConnection>() {
+			this.mServerConnector.registerServerMessage(FLAG_MESSAGE_SERVER_MOVE_SPRITE, MoveSpriteServerMessage.class, new IServerMessageHandler<BluetoothSocketConnection>() {
 				@Override
 				public void onHandleMessage(final ServerConnector<BluetoothSocketConnection> pServerConnector, final IServerMessage pServerMessage) throws IOException {
 					final MoveSpriteServerMessage moveSpriteServerMessage = (MoveSpriteServerMessage)pServerMessage;

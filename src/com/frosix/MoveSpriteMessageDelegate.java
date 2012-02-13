@@ -26,10 +26,6 @@ public class MoveSpriteMessageDelegate {
 		this.mY = pY;
 	}
 
-	public short getFlag() {
-		return ConstantStorage.FLAG_MESSAGE_MOVE_SPRITE;
-	}
-
 	protected void onReadTransmissionData(DataInputStream pDataInputStream)
 			throws IOException {
 		this.mID = pDataInputStream.readInt();
