@@ -18,6 +18,7 @@ import org.anddev.andengine.extension.multiplayer.protocol.client.connector.Blue
 import org.anddev.andengine.extension.multiplayer.protocol.client.connector.BluetoothSocketConnectionServerConnector.IBluetoothSocketConnectionServerConnectorListener;
 import org.anddev.andengine.extension.multiplayer.protocol.client.connector.ServerConnector;
 import org.anddev.andengine.extension.multiplayer.protocol.exception.BluetoothException;
+import org.anddev.andengine.extension.multiplayer.protocol.server.BluetoothSocketServer;
 import org.anddev.andengine.extension.multiplayer.protocol.server.IClientMessageHandler;
 import org.anddev.andengine.extension.multiplayer.protocol.server.connector.BluetoothSocketConnectionClientConnector;
 import org.anddev.andengine.extension.multiplayer.protocol.server.connector.ClientConnector;
@@ -27,7 +28,6 @@ import org.anddev.andengine.input.touch.TouchEvent;
 import org.anddev.andengine.ui.activity.BaseGameActivity;
 import org.anddev.andengine.util.Debug;
 
-import protocol.server.MessageReceivingBluetoothSocketServer;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
@@ -50,7 +50,7 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 	private Rectangle selfRect;
 	private Rectangle alienRect;
 	private String mServerMACAddress;
-	private MessageReceivingBluetoothSocketServer<BluetoothSocketConnectionClientConnector> mBluetoothSocketServer;
+	private BluetoothSocketServer<BluetoothSocketConnectionClientConnector> mBluetoothSocketServer;
 	private BluetoothAdapter mBluetoothAdapter;
 	private final MessagePool<IMessage> mMessagePool = new MessagePool<IMessage>();
 	private ServerConnector<BluetoothSocketConnection> mServerConnector;
@@ -164,11 +164,21 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 	private void initServer() {
 		this.mServerMACAddress = BluetoothAdapter.getDefaultAdapter().getAddress();
 		try {
-			this.mBluetoothSocketServer = new MessageReceivingBluetoothSocketServer<BluetoothSocketConnectionClientConnector>(ConstantStorage.MY_UUID, new ClientConnectorListener(), new ServerStateListener()) {
+			this.mBluetoothSocketServer = new BluetoothSocketServer<BluetoothSocketConnectionClientConnector>(ConstantStorage.MY_UUID, new ClientConnectorListener(), new ServerStateListener()) {
 				@Override
 				protected BluetoothSocketConnectionClientConnector newClientConnector(final BluetoothSocketConnection pBluetoothSocketConnection) throws IOException {
 					try {
-						return new BluetoothSocketConnectionClientConnector(pBluetoothSocketConnection);
+						BluetoothSocketConnectionClientConnector clientConnector = new BluetoothSocketConnectionClientConnector(pBluetoothSocketConnection);
+						clientConnector.registerClientMessage(FLAG_MESSAGE_CLIENT_MOVE_SPRITE, MoveSpriteClientMessage.class, new IClientMessageHandler<BluetoothSocketConnection>() {
+							@Override
+							public void onHandleMessage(
+									ClientConnector<BluetoothSocketConnection> pClientConnector,
+									IClientMessage pClientMessage) throws IOException {
+								final MoveSpriteClientMessage moveSpriteClientMessage = (MoveSpriteClientMessage)pClientMessage;
+								MultiplayerGameActivity.this.moveSprite(moveSpriteClientMessage.getID(), moveSpriteClientMessage.getX(), moveSpriteClientMessage.getY());
+							}
+						});
+						return clientConnector;
 					} catch (final BluetoothException e) {
 						Debug.e(e);
 						/* Actually cannot happen. */
@@ -176,16 +186,6 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 					}
 				}
 			};
-			
-			this.mBluetoothSocketServer.registerClientMessage(FLAG_MESSAGE_CLIENT_MOVE_SPRITE, MoveSpriteClientMessage.class, new IClientMessageHandler<BluetoothSocketConnection>() {
-				@Override
-				public void onHandleMessage(
-						ClientConnector<BluetoothSocketConnection> pClientConnector,
-						IClientMessage pClientMessage) throws IOException {
-					final MoveSpriteClientMessage moveSpriteClientMessage = (MoveSpriteClientMessage)pClientMessage;
-					MultiplayerGameActivity.this.moveSprite(moveSpriteClientMessage.getID(), moveSpriteClientMessage.getX(), moveSpriteClientMessage.getY());
-				}
-			});
 		} catch (final BluetoothException e) {
 			Debug.e(e);
 		}
