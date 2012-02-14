@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.anddev.andengine.engine.Engine;
 import org.anddev.andengine.engine.camera.Camera;
+import org.anddev.andengine.engine.handler.IUpdateHandler;
 import org.anddev.andengine.engine.options.EngineOptions;
 import org.anddev.andengine.engine.options.EngineOptions.ScreenOrientation;
 import org.anddev.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
@@ -111,7 +112,7 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 		mScene.attachChild(alienRect);
 		
 		selfRect = new Rectangle(0, 0, 80, 80);
-		selfRect.setColor(255, 0, 0);
+		selfRect.setColor(0, 0, 255);
 		mScene.attachChild(selfRect);
 		mScene.setOnSceneTouchListener(new IOnSceneTouchListener() {
 			@Override
@@ -128,6 +129,21 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 				return true;
 			}
 		});
+		mScene.registerUpdateHandler(new IUpdateHandler(){
+
+			@Override
+			public void onUpdate(float pSecondsElapsed) {
+				if(selfRect.collidesWith(alienRect) ){
+					selfRect.setColor(255, 0, 0);
+					alienRect.setColor(255, 0, 0);
+				}
+				
+			}
+
+			@Override
+			public void reset() {					
+			}});
+		
 		return mScene;
 	}
 	
