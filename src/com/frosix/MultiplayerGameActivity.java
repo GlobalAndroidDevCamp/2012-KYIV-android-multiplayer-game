@@ -108,11 +108,9 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 		mScene = new Scene();
 		
 		alienRect = new Rectangle( 0 ,0 ,80, 80) ;
-		alienRect.setColor( 0 ,255 ,0);
 		mScene.attachChild(alienRect);
 		
 		selfRect = new Rectangle(0, 0, 80, 80);
-		selfRect.setColor(0, 0, 255);
 		mScene.attachChild(selfRect);
 		mScene.setOnSceneTouchListener(new IOnSceneTouchListener() {
 			@Override
@@ -136,6 +134,10 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 				if(selfRect.collidesWith(alienRect) ){
 					selfRect.setColor(255, 0, 0);
 					alienRect.setColor(255, 0, 0);
+				}
+				else {
+					selfRect.setColor(0, 0, 255);
+					alienRect.setColor( 0 ,255 ,0);
 				}
 				
 			}
