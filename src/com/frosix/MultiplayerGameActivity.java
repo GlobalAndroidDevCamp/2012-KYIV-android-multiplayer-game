@@ -132,16 +132,16 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 	}
 	
 	private void sendClientMessage(float x, float y) {
-		final MoveSpriteClientMessage moveFaceClientMessage = (MoveSpriteClientMessage) mMessagePool.obtainMessage(FLAG_MESSAGE_CLIENT_MOVE_SPRITE);
-		moveFaceClientMessage.set(0, x, y);
+		final MoveSpriteClientMessage moveSpriteClientMessage = (MoveSpriteClientMessage) mMessagePool.obtainMessage(FLAG_MESSAGE_CLIENT_MOVE_SPRITE);
+		moveSpriteClientMessage.set(0, x, y);
 
 		try {
-			mServerConnector.sendClientMessage(moveFaceClientMessage);
+			mServerConnector.sendClientMessage(moveSpriteClientMessage);
 		} catch (IOException e) {
 			Log.e(DEBUGTAG, "Unable to send client message", e);
 		}
 
-		mMessagePool.recycleMessage(moveFaceClientMessage);
+		mMessagePool.recycleMessage(moveSpriteClientMessage);
 	}
 	
 	private void sendServerMessage(float x, float y) {
