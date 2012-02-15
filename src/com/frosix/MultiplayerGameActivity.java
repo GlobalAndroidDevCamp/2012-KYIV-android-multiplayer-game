@@ -40,13 +40,14 @@ import android.util.Log;
 import android.view.Display;
 import android.widget.Toast;
 
-import com.frosix.adt.messages.server.ConnectionCloseServerMessage;
+import com.frosix.protocol.adt.message.MoveSpriteCommonMessage;
+import com.frosix.protocol.adt.message.server.ConnectionCloseServerMessage;
 import com.frosix.util.BluetoothListDevicesActivity;
 
 public class MultiplayerGameActivity extends BaseGameActivity implements ConstantStorage {
 
 	
-	private Camera mCamera ;
+	private Camera mCamera;
 	private Scene mScene;
 	private Rectangle selfRect;
 	private Rectangle alienRect;
@@ -55,6 +56,7 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 	private BluetoothAdapter mBluetoothAdapter;
 	private final MessagePool<IMessage> mMessagePool = new MessagePool<IMessage>();
 	private ServerConnector<BluetoothSocketConnection> mServerConnector;
+	//private BluetoothDelegate bluetoothDelegate; 
 	
 	@Override
 	protected void onCreate(Bundle pSavedInstanceState) {
@@ -77,9 +79,8 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 	}
 	
 	private void initMessagePool() {
-		this.mMessagePool.registerMessage(FLAG_MESSAGE_SERVER_MOVE_SPRITE, MoveSpriteServerMessage.class);
-		this.mMessagePool.registerMessage(FLAG_MESSAGE_SERVER_CONNECTION_CLOSE, ConnectionCloseServerMessage.class);
-		this.mMessagePool.registerMessage(FLAG_MESSAGE_CLIENT_MOVE_SPRITE, MoveSpriteClientMessage.class);
+		this.mMessagePool.registerMessage(FLAG_MESSAGE_COMMON_MOVE_SPRITE, MoveSpriteCommonMessage.class);
+		this.mMessagePool.registerMessage(FLAG_MESSAGE_SERVER_CONNECTION_CLOSE, com.frosix.protocol.adt.message.server.ConnectionCloseServerMessage.class);
 	}
 	
 	@Override
@@ -118,7 +119,7 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 			    float x = pSceneTouchEvent.getX();
 			    float y = pSceneTouchEvent.getY();
 				selfRect.setPosition(x - selfRect.getWidth() * 0.5f, y - selfRect.getHeight() * 0.5f);
-			    
+			    //delegate.sendMessage();
 			    if (mBluetoothSocketServer == null) {
 			    	MultiplayerGameActivity.this.sendClientMessage(x, y);
 			    } else {
@@ -150,7 +151,7 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 	}
 	
 	private void sendClientMessage(float x, float y) {
-		final MoveSpriteClientMessage moveSpriteClientMessage = (MoveSpriteClientMessage) mMessagePool.obtainMessage(FLAG_MESSAGE_CLIENT_MOVE_SPRITE);
+		final MoveSpriteCommonMessage moveSpriteClientMessage = (MoveSpriteCommonMessage) mMessagePool.obtainMessage(FLAG_MESSAGE_COMMON_MOVE_SPRITE);
 		moveSpriteClientMessage.set(0, x, y);
 
 		try {
@@ -163,7 +164,7 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 	}
 	
 	private void sendServerMessage(float x, float y) {
-		final MoveSpriteServerMessage moveFaceServerMessage = (MoveSpriteServerMessage) mMessagePool.obtainMessage(FLAG_MESSAGE_SERVER_MOVE_SPRITE);
+		final MoveSpriteCommonMessage moveFaceServerMessage = (MoveSpriteCommonMessage) mMessagePool.obtainMessage(FLAG_MESSAGE_COMMON_MOVE_SPRITE);
 		moveFaceServerMessage.set(0, x, y);
 
 		try {
@@ -187,13 +188,13 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 				protected BluetoothSocketConnectionClientConnector newClientConnector(final BluetoothSocketConnection pBluetoothSocketConnection) throws IOException {
 					try {
 						BluetoothSocketConnectionClientConnector clientConnector = new BluetoothSocketConnectionClientConnector(pBluetoothSocketConnection);
-						clientConnector.registerClientMessage(FLAG_MESSAGE_CLIENT_MOVE_SPRITE, MoveSpriteClientMessage.class, new IClientMessageHandler<BluetoothSocketConnection>() {
+						clientConnector.registerClientMessage(FLAG_MESSAGE_COMMON_MOVE_SPRITE, MoveSpriteCommonMessage.class, new IClientMessageHandler<BluetoothSocketConnection>() {
 							@Override
 							public void onHandleMessage(
 									ClientConnector<BluetoothSocketConnection> pClientConnector,
 									IClientMessage pClientMessage) throws IOException {
-								final MoveSpriteClientMessage moveSpriteClientMessage = (MoveSpriteClientMessage)pClientMessage;
-								MultiplayerGameActivity.this.moveSprite(moveSpriteClientMessage.getID(), moveSpriteClientMessage.getX(), moveSpriteClientMessage.getY());
+								final MoveSpriteCommonMessage moveSpriteCommonMessage = (MoveSpriteCommonMessage)pClientMessage;
+								MultiplayerGameActivity.this.moveSprite(moveSpriteCommonMessage.mID, moveSpriteCommonMessage.mX, moveSpriteCommonMessage.mY);
 							}
 						});
 						return clientConnector;
@@ -222,11 +223,11 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 				}
 			});
 
-			this.mServerConnector.registerServerMessage(FLAG_MESSAGE_SERVER_MOVE_SPRITE, MoveSpriteServerMessage.class, new IServerMessageHandler<BluetoothSocketConnection>() {
+			this.mServerConnector.registerServerMessage(FLAG_MESSAGE_COMMON_MOVE_SPRITE, MoveSpriteCommonMessage.class, new IServerMessageHandler<BluetoothSocketConnection>() {
 				@Override
 				public void onHandleMessage(final ServerConnector<BluetoothSocketConnection> pServerConnector, final IServerMessage pServerMessage) throws IOException {
-					final MoveSpriteServerMessage moveSpriteServerMessage = (MoveSpriteServerMessage)pServerMessage;
-					MultiplayerGameActivity.this.moveSprite(moveSpriteServerMessage.getID(), moveSpriteServerMessage.getX(), moveSpriteServerMessage.getY());
+					final MoveSpriteCommonMessage moveSpriteCommonMessage = (MoveSpriteCommonMessage)pServerMessage;
+					MultiplayerGameActivity.this.moveSprite(moveSpriteCommonMessage.mID, moveSpriteCommonMessage.mX, moveSpriteCommonMessage.mY);
 				}
 			});
 
@@ -237,7 +238,6 @@ public class MultiplayerGameActivity extends BaseGameActivity implements Constan
 	}
 	
 	public void moveSprite(final int pID, final float pX, final float pY) {
-		/* Move the sprite. */
 		alienRect.setPosition(pX - alienRect.getWidth() * 0.5f, pY - alienRect.getHeight() * 0.5f);
 	}
 	
