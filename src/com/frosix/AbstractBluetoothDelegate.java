@@ -1,9 +1,7 @@
 package com.frosix;
 
-public abstract class AbstractBluetoothDelegate implements BluetoothDelegate {
+public abstract class AbstractBluetoothDelegate<T> implements BluetoothDelegate {
 	
-	//private T bluetoothEndpoint;
+	protected T bluetoothEndpoint;
 	
-	
-
 }
