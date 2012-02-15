@@ -43,7 +43,6 @@ public class MultiplayerGameActivity extends BaseGameActivity implements IMessag
 	private Scene mScene;
 	private Rectangle selfRect;
 	private Rectangle alienRect;
-	private String mServerMACAddress;
 	private BluetoothAdapter mBluetoothAdapter;
 	private final MessagePool<IMessage> mMessagePool = new MessagePool<IMessage>();
 	private BluetoothDelegate bluetoothDelegate; 
@@ -53,7 +52,6 @@ public class MultiplayerGameActivity extends BaseGameActivity implements IMessag
 		super.onCreate(pSavedInstanceState);
 		initMessagePool();
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-		mServerMACAddress = BluetoothAdapter.getDefaultAdapter().getAddress();
 		if (mBluetoothAdapter == null) {
 			Toast.makeText(this, "Bluetooth is not available!", Toast.LENGTH_LONG).show();
 			finish();
@@ -152,12 +150,10 @@ public class MultiplayerGameActivity extends BaseGameActivity implements IMessag
 	
 	@Override
 	public void onStarted(Connector<?> pConnector) {
-		Log.i("listnerLog" ,"CLIENT: Connected to server.");
 	}
 
 	@Override
 	public void onTerminated(Connector<?> pConnector) {
-		Log.i("listnerLog" ,"CLIENT: Disconnected from Server...");
 		finish();
 	}
 
@@ -169,7 +165,7 @@ public class MultiplayerGameActivity extends BaseGameActivity implements IMessag
 				.setIcon(android.R.drawable.ic_dialog_info)
 				.setTitle("Server-Details")
 				.setCancelable(false)
-				.setMessage("The Name of your Server is:\n" + BluetoothAdapter.getDefaultAdapter().getName() + "\n" + "The MACAddress of your Server is:\n" + this.mServerMACAddress)
+				.setMessage("The Name of your Server is:\n" + mBluetoothAdapter.getName() + "\n" + "The MACAddress of your Server is:\n" + mBluetoothAdapter.getAddress())
 				.setPositiveButton(android.R.string.ok, null)
 				.create();
 			case DIALOG_CHOOSE_SERVER_OR_CLIENT_ID:
@@ -190,6 +186,7 @@ public class MultiplayerGameActivity extends BaseGameActivity implements IMessag
 						MultiplayerGameActivity.this.toast("You can add and move sprites, which are only shown on the clients.");
 						MultiplayerGameActivity.this.bluetoothDelegate = new ServerBluetoothDelegate(MultiplayerGameActivity.this);
 						MultiplayerGameActivity.this.bluetoothDelegate.setMoveSpriteMessageHandler(MultiplayerGameActivity.this);
+						MultiplayerGameActivity.this.bluetoothDelegate.init();
 						MultiplayerGameActivity.this.showDialog(DIALOG_SHOW_SERVER_IP_ID);
 					}
 				})
@@ -220,9 +217,10 @@ public class MultiplayerGameActivity extends BaseGameActivity implements IMessag
 				showDialog(DIALOG_CHOOSE_SERVER_OR_CLIENT_ID);
 				break;
 			case REQUESTCODE_BLUETOOTH_CONNECT:
-				mServerMACAddress = pData.getExtras().getString(BluetoothListDevicesActivity.EXTRA_DEVICE_ADDRESS);
+				String mServerMACAddress = pData.getExtras().getString(BluetoothListDevicesActivity.EXTRA_DEVICE_ADDRESS);
 				bluetoothDelegate = new ClientBluetoothDelegate(mBluetoothAdapter, mServerMACAddress, this);
 				bluetoothDelegate.setMoveSpriteMessageHandler(this);
+				bluetoothDelegate.init();
 				break;
 			default:
 				super.onActivityResult(pRequestCode, pResultCode, pData);
