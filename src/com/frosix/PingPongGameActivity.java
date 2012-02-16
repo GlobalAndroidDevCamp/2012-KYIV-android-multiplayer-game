@@ -99,8 +99,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 					ScreenOrientation.PORTRAIT, new RatioResolutionPolicy(
 							CAMERA_WIDTH, CAMERA_HEIGHT), mCamera);
 			
-		    engineOptions.getTouchOptions().setRunOnUpdateThread(true);
-		    
+		   		    
 			final Engine mEngine = new Engine(engineOptions);
 		
 			return mEngine;
@@ -278,7 +277,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
-		if(!pSceneTouchEvent.isActionUp()){
+		if(pSceneTouchEvent.isActionDown()){
 			moveFlag = true;
 			if(pSceneTouchEvent.getX() > CAMERA_WIDTH/2){
 				isRight = true;
@@ -296,9 +295,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		else{
 			moveFlag = false;
 		}
-		MovePlatformCommonMessage mMesageToSend = (MovePlatformCommonMessage) getMessage(FLAG_MESSAGE_COMMON_MOVE_PLATFORM);
-		mMesageToSend.set(0, isRight, moveFlag);
-		sendMessage(mMesageToSend);
+//		MovePlatformCommonMessage mMesageToSend = (MovePlatformCommonMessage) getMessage(FLAG_MESSAGE_COMMON_MOVE_PLATFORM);
+//		mMesageToSend.set(0, isRight, moveFlag);
+//		sendMessage(mMesageToSend);
 		return true;
 	}
 	
