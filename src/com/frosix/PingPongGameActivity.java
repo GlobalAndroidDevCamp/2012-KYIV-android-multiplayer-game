@@ -316,6 +316,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			MovePlatformCommonMessage mMessage = (MovePlatformCommonMessage)pMessage;
 			this.isEnemyRight = mMessage.isRight;
 			this.moveEnemyFlag = mMessage.moveFlag;
+			Log.i("flag", "message handled" + mMessage.moveFlag + " " +mMessage.isRight );
 		}
 		
 	}
