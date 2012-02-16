@@ -18,7 +18,6 @@ import android.util.Log;
 
 import com.frosix.protocol.adt.message.ConnectionCloseCommonMessage;
 import com.frosix.protocol.adt.message.ICommonMessage;
-import com.frosix.protocol.adt.message.MoveSpriteCommonMessage;
 
 public class ClientBluetoothDelegate extends AbstractBluetoothDelegate<ServerConnector<BluetoothSocketConnection>> {
 	
@@ -48,7 +47,7 @@ public class ClientBluetoothDelegate extends AbstractBluetoothDelegate<ServerCon
 		bluetoothEndpoint.registerServerMessage(flag, messageClass, new IServerMessageHandler<BluetoothSocketConnection>() {
 			@Override
 			public void onHandleMessage(final ServerConnector<BluetoothSocketConnection> pServerConnector, final IServerMessage pServerMessage) throws IOException {
-				final MoveSpriteCommonMessage moveSpriteCommonMessage = (MoveSpriteCommonMessage)pServerMessage;
+				final ICommonMessage moveSpriteCommonMessage = (ICommonMessage)pServerMessage;
 				messageHandler.onHandleMessage(pServerConnector, moveSpriteCommonMessage);
 			}
 		});
