@@ -423,9 +423,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	public static class SynchronizingMessage extends Message implements ICommonMessage {
 
 		public boolean gameStart ;
-		public Vector2 ballPos;
-		public Vector2 ballVelocity;
-		public Vector2 platformPos;
+		public Vector2 ballPos = new Vector2();
+		public Vector2 ballVelocity = new Vector2();
+		public Vector2 platformPos = new Vector2();
 		
 		public SynchronizingMessage () {}
 		
