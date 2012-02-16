@@ -19,7 +19,6 @@ import org.anddev.andengine.entity.scene.Scene;
 import org.anddev.andengine.entity.scene.Scene.IOnSceneTouchListener;
 import org.anddev.andengine.entity.shape.Shape;
 import org.anddev.andengine.entity.sprite.AnimatedSprite;
-import org.anddev.andengine.extension.multiplayer.protocol.adt.message.IMessage;
 import org.anddev.andengine.extension.multiplayer.protocol.adt.message.Message;
 import org.anddev.andengine.extension.multiplayer.protocol.shared.BluetoothSocketConnection;
 import org.anddev.andengine.extension.multiplayer.protocol.shared.Connector;
@@ -73,7 +72,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private boolean isEnemyRight =false;
 	
 	@SuppressWarnings("serial")
-	private Map<Short, Class<? extends IMessage>> messageMap = new HashMap<Short, Class<? extends IMessage>>() {{
+	private Map<Short, Class<? extends ICommonMessage>> messageMap = new HashMap<Short, Class<? extends ICommonMessage>>() {{
 		put(FLAG_MESSAGE_COMMON_MOVE_PLATFORM, MovePlatformCommonMessage.class);
 	}};
 	
@@ -311,18 +310,18 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	public void onHandleMessage(
 			Connector<BluetoothSocketConnection> pConnector,
 			ICommonMessage pMessage) throws IOException {
-		
 		if (pMessage instanceof MoveSpriteCommonMessage) {
 			MovePlatformCommonMessage mMessage = (MovePlatformCommonMessage)pMessage;
 			this.isEnemyRight = mMessage.isRight;
 			this.moveEnemyFlag = mMessage.moveFlag;
 			Log.i("flag", "message handled" + mMessage.moveFlag + " " +mMessage.isRight );
+			return;
 		}
-		
+		super.onHandleMessage(pConnector, pMessage);
 	}
 
 	@Override
-	protected Map<Short, Class<? extends IMessage>> getMessageMap() {
+	protected Map<Short, Class<? extends ICommonMessage>> getMessageMap() {
 		return messageMap;
 	}
 	

@@ -13,7 +13,6 @@ import org.anddev.andengine.engine.options.resolutionpolicy.RatioResolutionPolic
 import org.anddev.andengine.entity.primitive.Rectangle;
 import org.anddev.andengine.entity.scene.Scene;
 import org.anddev.andengine.entity.scene.Scene.IOnSceneTouchListener;
-import org.anddev.andengine.extension.multiplayer.protocol.adt.message.IMessage;
 import org.anddev.andengine.extension.multiplayer.protocol.shared.BluetoothSocketConnection;
 import org.anddev.andengine.extension.multiplayer.protocol.shared.Connector;
 import org.anddev.andengine.input.touch.TouchEvent;
@@ -28,7 +27,7 @@ public class TestActivity extends BaseMultiplayerGameActivity {
 	private Rectangle selfRect;
 	private Rectangle alienRect;
 	@SuppressWarnings("serial")
-	private Map<Short, Class<? extends IMessage>> messageMap = new HashMap<Short, Class<? extends IMessage>>() {{
+	private Map<Short, Class<? extends ICommonMessage>> messageMap = new HashMap<Short, Class<? extends ICommonMessage>>() {{
 		put(FLAG_MESSAGE_COMMON_MOVE_SPRITE, MoveSpriteCommonMessage.class);
 	}};
 	
@@ -95,14 +94,16 @@ public class TestActivity extends BaseMultiplayerGameActivity {
 		if (pMessage instanceof MoveSpriteCommonMessage) {
 			MoveSpriteCommonMessage moveSpriteCommonMessage = (MoveSpriteCommonMessage)pMessage;
 			moveSprite(moveSpriteCommonMessage.mID, moveSpriteCommonMessage.mX, moveSpriteCommonMessage.mY);
+			return;
 		}
+		super.onHandleMessage(pConnector, pMessage);
 	}
 
 	public void moveSprite(final int pID, final float pX, final float pY) {
 		alienRect.setPosition(pX - alienRect.getWidth() * 0.5f, pY - alienRect.getHeight() * 0.5f);
 	}
 
-	public Map<Short, Class<? extends IMessage>> getMessageMap() {
+	public Map<Short, Class<? extends ICommonMessage>> getMessageMap() {
 		return messageMap;
 	}
 

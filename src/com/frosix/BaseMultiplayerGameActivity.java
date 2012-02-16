@@ -3,8 +3,6 @@ package com.frosix;
 import java.io.IOException;
 import java.util.Map;
 
-import org.anddev.andengine.engine.Engine;
-import org.anddev.andengine.entity.scene.Scene;
 import org.anddev.andengine.extension.multiplayer.protocol.adt.message.IMessage;
 import org.anddev.andengine.extension.multiplayer.protocol.shared.BluetoothSocketConnection;
 import org.anddev.andengine.extension.multiplayer.protocol.shared.Connector;
@@ -38,7 +36,6 @@ public abstract class BaseMultiplayerGameActivity extends BaseGameActivity imple
 	@Override
 	protected void onCreate(Bundle pSavedInstanceState) {
 		super.onCreate(pSavedInstanceState);
-		initMessagePool();
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		if (mBluetoothAdapter == null) {
 			Toast.makeText(this, "Bluetooth is not available!", Toast.LENGTH_LONG).show();
@@ -54,13 +51,12 @@ public abstract class BaseMultiplayerGameActivity extends BaseGameActivity imple
 		}
 	}
 	
-	protected abstract Map<Short, Class<? extends IMessage>> getMessageMap();
+	protected abstract Map<Short, Class<? extends ICommonMessage>> getMessageMap();
 	
-	private void initMessagePool() {
+	private void initMessagePool(Map<Short, Class<? extends ICommonMessage>> messageMap) {
 		mMessagePool.registerMessage(FLAG_MESSAGE_COMMON_CONNECTION_CLOSE, ConnectionCloseCommonMessage.class);
-		Map<Short, Class<? extends IMessage>> messageMap = getMessageMap();
 		if (messageMap != null) {
-			for (Map.Entry<Short, Class<? extends IMessage>> messageEntry : messageMap.entrySet()) {
+			for (Map.Entry<Short, Class<? extends ICommonMessage>> messageEntry : messageMap.entrySet()) {
 				mMessagePool.registerMessage(messageEntry.getKey(), messageEntry.getValue());
 			}
 		}
@@ -94,9 +90,7 @@ public abstract class BaseMultiplayerGameActivity extends BaseGameActivity imple
 					public void onClick(final DialogInterface pDialog, final int pWhich) {
 						BaseMultiplayerGameActivity activity = BaseMultiplayerGameActivity.this;
 						activity.toast("You can add and move sprites, which are only shown on the clients.");
-						activity.bluetoothDelegate = new ServerBluetoothDelegate(activity);
-						activity.bluetoothDelegate.setMoveSpriteMessageHandler(activity);
-						activity.bluetoothDelegate.init();
+						setBluetoothDelegate(new ServerBluetoothDelegate(activity));
 						activity.showDialog(DIALOG_SHOW_SERVER_IP_ID);
 					}
 				})
@@ -104,6 +98,23 @@ public abstract class BaseMultiplayerGameActivity extends BaseGameActivity imple
 			default:
 				return super.onCreateDialog(pID);
 		}
+	}
+	
+	private void setMessageHandler(Map<Short, Class<? extends ICommonMessage>> messageMap) {
+		bluetoothDelegate.registerMessage(FLAG_MESSAGE_COMMON_CONNECTION_CLOSE, ConnectionCloseCommonMessage.class, this);
+		if (messageMap != null) {
+			for (Map.Entry<Short, Class<? extends ICommonMessage>> messageEntry : messageMap.entrySet()) {
+				bluetoothDelegate.registerMessage(messageEntry.getKey(), messageEntry.getValue(), this);
+			}
+		}
+	}
+	
+	private void setBluetoothDelegate(BluetoothDelegate bluetoothDelegate) {
+		this.bluetoothDelegate = bluetoothDelegate;
+		Map<Short, Class<? extends ICommonMessage>> messageMap = getMessageMap();
+		initMessagePool(messageMap);
+		setMessageHandler(messageMap);
+		this.bluetoothDelegate.init();
 	}
 	
 	@Override
@@ -130,9 +141,7 @@ public abstract class BaseMultiplayerGameActivity extends BaseGameActivity imple
 				break;
 			case REQUESTCODE_BLUETOOTH_CONNECT:
 				String mServerMACAddress = pData.getExtras().getString(BluetoothListDevicesActivity.EXTRA_DEVICE_ADDRESS);
-				bluetoothDelegate = new ClientBluetoothDelegate(mServerMACAddress, this);
-				bluetoothDelegate.setMoveSpriteMessageHandler(this);
-				bluetoothDelegate.init();
+				setBluetoothDelegate(new ClientBluetoothDelegate(mServerMACAddress, this));
 				break;
 			default:
 				super.onActivityResult(pRequestCode, pResultCode, pData);
@@ -171,5 +180,14 @@ public abstract class BaseMultiplayerGameActivity extends BaseGameActivity imple
 		toast("Disconnected");
 		finish();
 	}
-    
+
+	@Override
+	public void onHandleMessage(
+			Connector<BluetoothSocketConnection> pConnector,
+			ICommonMessage pMessage) throws IOException {
+		if (pMessage instanceof ConnectionCloseCommonMessage) {
+			finish();
+		}
+	}
+	
 }

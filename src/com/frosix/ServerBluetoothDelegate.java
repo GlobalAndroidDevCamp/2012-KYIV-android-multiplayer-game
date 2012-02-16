@@ -1,6 +1,8 @@
 package com.frosix;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.anddev.andengine.extension.multiplayer.protocol.adt.message.client.IClientMessage;
 import org.anddev.andengine.extension.multiplayer.protocol.exception.BluetoothException;
@@ -19,11 +21,10 @@ import android.util.Log;
 
 import com.frosix.protocol.adt.message.ConnectionCloseCommonMessage;
 import com.frosix.protocol.adt.message.ICommonMessage;
-import com.frosix.protocol.adt.message.MoveSpriteCommonMessage;
 
 public class ServerBluetoothDelegate extends AbstractBluetoothDelegate<BluetoothSocketServer<BluetoothSocketConnectionClientConnector>> {
-	
-	private IMessageHandler<BluetoothSocketConnection, Connector<BluetoothSocketConnection>, ICommonMessage> moveSpriteMessageHandler;
+
+	private List<MessageDescriptor> messageDescriptors = new ArrayList<MessageDescriptor>();
 	
 	public ServerBluetoothDelegate(final IConnectorListener<Connector<?>> connectorListener) {
 		try {
@@ -31,7 +32,7 @@ public class ServerBluetoothDelegate extends AbstractBluetoothDelegate<Bluetooth
 				@Override
 				public void onStarted(
 						ClientConnector<BluetoothSocketConnection> pClientConnector) {
-					Log.i("listnerLog" ,"SERVER: Client connected: " + pClientConnector.getConnection().getBluetoothSocket().getRemoteDevice().getAddress());
+					Log.i("listnerLog" , "SERVER: Client connected: " + pClientConnector.getConnection().getBluetoothSocket().getRemoteDevice().getAddress());
 					connectorListener.onStarted(pClientConnector);
 				}
 				@Override
@@ -46,15 +47,17 @@ public class ServerBluetoothDelegate extends AbstractBluetoothDelegate<Bluetooth
 				protected BluetoothSocketConnectionClientConnector newClientConnector(final BluetoothSocketConnection pBluetoothSocketConnection) throws IOException {
 					try {
 						BluetoothSocketConnectionClientConnector clientConnector = new BluetoothSocketConnectionClientConnector(pBluetoothSocketConnection);
-						clientConnector.registerClientMessage(ConstantStorage.FLAG_MESSAGE_COMMON_MOVE_SPRITE, MoveSpriteCommonMessage.class, new IClientMessageHandler<BluetoothSocketConnection>() {
-							@Override
-							public void onHandleMessage(
-									ClientConnector<BluetoothSocketConnection> pClientConnector,
-									IClientMessage pClientMessage) throws IOException {
-								final MoveSpriteCommonMessage moveSpriteCommonMessage = (MoveSpriteCommonMessage)pClientMessage;
-								moveSpriteMessageHandler.onHandleMessage(pClientConnector, moveSpriteCommonMessage);
-							}
-						});
+						for (final MessageDescriptor messageDescriptor : messageDescriptors) {
+							clientConnector.registerClientMessage(messageDescriptor.getFlag(), messageDescriptor.getMessageClass(), new IClientMessageHandler<BluetoothSocketConnection>() {
+								@Override
+								public void onHandleMessage(
+										ClientConnector<BluetoothSocketConnection> pClientConnector,
+										IClientMessage pClientMessage) throws IOException {
+									ICommonMessage moveSpriteCommonMessage = (ICommonMessage)pClientMessage;
+									messageDescriptor.getMessageHandler().onHandleMessage(pClientConnector, moveSpriteCommonMessage);
+								}
+							});
+						}
 						return clientConnector;
 					} catch (final BluetoothException e) {
 						Debug.e(e);
@@ -69,9 +72,9 @@ public class ServerBluetoothDelegate extends AbstractBluetoothDelegate<Bluetooth
 	}
 	
 	@Override
-	public void setMoveSpriteMessageHandler(
-			IMessageHandler<BluetoothSocketConnection, Connector<BluetoothSocketConnection>, ICommonMessage> moveSpriteMessageHandler) {
-		this.moveSpriteMessageHandler = moveSpriteMessageHandler;
+	public void registerMessage(short flag, Class<? extends ICommonMessage> messageClass,
+			IMessageHandler<BluetoothSocketConnection, Connector<BluetoothSocketConnection>, ICommonMessage> messageHandler) {
+		messageDescriptors.add(new MessageDescriptor(flag, messageClass, messageHandler));
 	}
 	
 	@Override
@@ -96,6 +99,36 @@ public class ServerBluetoothDelegate extends AbstractBluetoothDelegate<Bluetooth
 			Debug.e(e);
 		}
 		bluetoothEndpoint.terminate();
+	}
+	
+	private static class MessageDescriptor {
+		
+		private short flag;
+		private Class<? extends ICommonMessage> messageClass;
+		private IMessageHandler<BluetoothSocketConnection, Connector<BluetoothSocketConnection>, ICommonMessage> messageHandler;
+		
+		public MessageDescriptor(
+				short flag,
+				Class<? extends ICommonMessage> messageClass,
+				IMessageHandler<BluetoothSocketConnection, Connector<BluetoothSocketConnection>, ICommonMessage> messageHandler) {
+			super();
+			this.flag = flag;
+			this.messageClass = messageClass;
+			this.messageHandler = messageHandler;
+		}
+		
+		public short getFlag() {
+			return flag;
+		}
+		
+		public Class<? extends ICommonMessage> getMessageClass() {
+			return messageClass;
+		}
+		
+		public IMessageHandler<BluetoothSocketConnection, Connector<BluetoothSocketConnection>, ICommonMessage> getMessageHandler() {
+			return messageHandler;
+		}
+		
 	}
 
 }

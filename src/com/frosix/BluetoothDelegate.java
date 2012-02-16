@@ -12,7 +12,7 @@ public interface BluetoothDelegate {
 	
 	void init();
 	
-	void setMoveSpriteMessageHandler(IMessageHandler<BluetoothSocketConnection, Connector<BluetoothSocketConnection>, ICommonMessage> handler);
+	void registerMessage(short flag, Class<? extends ICommonMessage> messageClass, IMessageHandler<BluetoothSocketConnection, Connector<BluetoothSocketConnection>, ICommonMessage> messageHandler);
 	
 	void onDestroy();
 	
