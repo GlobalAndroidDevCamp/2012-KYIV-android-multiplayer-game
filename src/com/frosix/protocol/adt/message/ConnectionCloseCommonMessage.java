@@ -1,21 +1,14 @@
-package com.frosix.protocol.adt.message.server;
+package com.frosix.protocol.adt.message;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import org.anddev.andengine.extension.multiplayer.protocol.adt.message.server.ServerMessage;
+import org.anddev.andengine.extension.multiplayer.protocol.adt.message.Message;
 
 import com.frosix.ConstantStorage;
 
-/**
- * (c) 2010 Nicolas Gramlich 
- * (c) 2011 Zynga Inc.
- * 
- * @author Nicolas Gramlich
- * @since 16:11:40 - 11.03.2011
- */
-public class ConnectionCloseServerMessage extends ServerMessage implements ConstantStorage {
+public class ConnectionCloseCommonMessage extends Message implements ICommonMessage, ConstantStorage {
 	// ===========================================================
 	// Constants
 	// ===========================================================
@@ -28,7 +21,7 @@ public class ConnectionCloseServerMessage extends ServerMessage implements Const
 	// Constructors
 	// ===========================================================
 
-	public ConnectionCloseServerMessage() {
+	public ConnectionCloseCommonMessage() {
 
 	}
 
@@ -42,7 +35,7 @@ public class ConnectionCloseServerMessage extends ServerMessage implements Const
 
 	@Override
 	public short getFlag() {
-		return FLAG_MESSAGE_SERVER_CONNECTION_CLOSE;
+		return FLAG_MESSAGE_COMMON_CONNECTION_CLOSE;
 	}
 
 	@Override

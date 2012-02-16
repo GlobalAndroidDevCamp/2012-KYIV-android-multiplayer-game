@@ -3,7 +3,6 @@ package com.frosix;
 import java.io.IOException;
 
 import org.anddev.andengine.extension.multiplayer.protocol.adt.message.client.IClientMessage;
-import org.anddev.andengine.extension.multiplayer.protocol.client.connector.BluetoothSocketConnectionServerConnector.IBluetoothSocketConnectionServerConnectorListener;
 import org.anddev.andengine.extension.multiplayer.protocol.exception.BluetoothException;
 import org.anddev.andengine.extension.multiplayer.protocol.server.BluetoothSocketServer;
 import org.anddev.andengine.extension.multiplayer.protocol.server.IClientMessageHandler;
@@ -18,6 +17,7 @@ import org.anddev.andengine.util.Debug;
 
 import android.util.Log;
 
+import com.frosix.protocol.adt.message.ConnectionCloseCommonMessage;
 import com.frosix.protocol.adt.message.ICommonMessage;
 import com.frosix.protocol.adt.message.MoveSpriteCommonMessage;
 
@@ -25,22 +25,23 @@ public class ServerBluetoothDelegate extends AbstractBluetoothDelegate<Bluetooth
 	
 	private IMessageHandler<BluetoothSocketConnection, Connector<BluetoothSocketConnection>, ICommonMessage> moveSpriteMessageHandler;
 	
-	public ServerBluetoothDelegate(final IConnectorListener<Connector<?>> connectorTerminateListener) {
+	public ServerBluetoothDelegate(final IConnectorListener<Connector<?>> connectorListener) {
 		try {
-			IBluetoothSocketConnectionClientConnectorListener connectorListener = new IBluetoothSocketConnectionClientConnectorListener() {
+			IBluetoothSocketConnectionClientConnectorListener listener = new IBluetoothSocketConnectionClientConnectorListener() {
 				@Override
 				public void onStarted(
 						ClientConnector<BluetoothSocketConnection> pClientConnector) {
 					Log.i("listnerLog" ,"SERVER: Client connected: " + pClientConnector.getConnection().getBluetoothSocket().getRemoteDevice().getAddress());
+					connectorListener.onStarted(pClientConnector);
 				}
 				@Override
 				public void onTerminated(
 						ClientConnector<BluetoothSocketConnection> pClientConnector) {
 					Log.i("listnerLog" , "SERVER: Client disconnected: " + pClientConnector.getConnection().getBluetoothSocket().getRemoteDevice().getAddress());
-					connectorTerminateListener.onTerminated(pClientConnector);
+					connectorListener.onTerminated(pClientConnector);
 				}
 			};
-			bluetoothEndpoint = new BluetoothSocketServer<BluetoothSocketConnectionClientConnector>(ConstantStorage.MY_UUID, connectorListener, new ServerStateListener()) {
+			bluetoothEndpoint = new BluetoothSocketServer<BluetoothSocketConnectionClientConnector>(ConstantStorage.MY_UUID, listener, new ServerStateListener()) {
 				@Override
 				protected BluetoothSocketConnectionClientConnector newClientConnector(final BluetoothSocketConnection pBluetoothSocketConnection) throws IOException {
 					try {
@@ -83,8 +84,18 @@ public class ServerBluetoothDelegate extends AbstractBluetoothDelegate<Bluetooth
 		try {
 			bluetoothEndpoint.sendBroadcastServerMessage(message);
 		} catch (IOException e) {
-			Log.e(ConstantStorage.DEBUGTAG, "Unable to send server message", e);
+			Debug.e(e);
 		}
+	}
+	
+	@Override
+	public void onDestroy() {
+		try {
+			bluetoothEndpoint.sendBroadcastServerMessage(new ConnectionCloseCommonMessage());
+		} catch (final IOException e) {
+			Debug.e(e);
+		}
+		bluetoothEndpoint.terminate();
 	}
 
 }

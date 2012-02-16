@@ -14,4 +14,6 @@ public interface BluetoothDelegate {
 	
 	void setMoveSpriteMessageHandler(IMessageHandler<BluetoothSocketConnection, Connector<BluetoothSocketConnection>, ICommonMessage> handler);
 	
+	void onDestroy();
+	
 }
