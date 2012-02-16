@@ -107,13 +107,14 @@ public class Box2DExampleActivity extends BaseGameActivity implements IOnSceneTo
 	//	final Shape left = new Rectangle(0, 0, 2, CAMERA_HEIGHT);
 		final Shape left = new Rectangle(- CAMERA_HEIGHT/2, CAMERA_HEIGHT/2, CAMERA_HEIGHT, 2);
 		left.setRotation(90);
-		final Shape right = new Rectangle(CAMERA_WIDTH - 2, 0, 2, CAMERA_HEIGHT);
+		final Shape right = new Rectangle( - CAMERA_HEIGHT /2 + CAMERA_WIDTH, CAMERA_HEIGHT /2, CAMERA_HEIGHT, 2);
+		right.setRotation(90);
 		
 		final FixtureDef wallFixtureDef = PhysicsFactory.createFixtureDef(0, 0.3f, 0.5f);
 		PhysicsFactory.createBoxBody(this.mPhysicsWorld, ground, BodyType.StaticBody, wallFixtureDef);
 		PhysicsFactory.createBoxBody(this.mPhysicsWorld, roof, BodyType.StaticBody, wallFixtureDef);
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, left, BodyType.StaticBody, wallFixtureDef);
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, right, BodyType.StaticBody, wallFixtureDef);
+		PhysicsFactory.createBoxBody(this.mPhysicsWorld, left, BodyType.StaticBody, wallFixtureDef).setUserData("left");
+		PhysicsFactory.createBoxBody(this.mPhysicsWorld, right, BodyType.StaticBody, wallFixtureDef).setUserData("right");
 
 		this.mScene.attachChild(ground);
 		this.mScene.attachChild(roof);
@@ -131,9 +132,11 @@ public class Box2DExampleActivity extends BaseGameActivity implements IOnSceneTo
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
 				
-				makeEffect(globBody, new Vector2(0, 20));
+				makeEffect(globBody, new Vector2(0, 13));
 			}
 		}));
+		
+		
 		
 		mScene.setOnSceneTouchListener(this);	
 				
@@ -182,9 +185,15 @@ public class Box2DExampleActivity extends BaseGameActivity implements IOnSceneTo
 			public void beginContact(Contact contact) {
 				Body ball ;
 				Body otherBody ;
-				
+			
 				ball = contact.getFixtureA().getBody().getType().equals(BodyType.DynamicBody) ? contact.getFixtureA().getBody() : contact.getFixtureB().getBody();
 				otherBody =  ball==contact.getFixtureA().getBody() ? contact.getFixtureB().getBody() : contact.getFixtureA().getBody();
+				
+//				if(otherBody.getUserData()!= null){
+//					Vector2 local = otherBody.getLocalVector(ball.getLinearVelocity());
+//					writeVectorToLog(local, "collide local Vector ");
+//					writeVectorToLog(ball.getLinearVelocity(), "collide Velocity Vector ");
+//				}
 			}
 		});
 		
@@ -196,7 +205,7 @@ public class Box2DExampleActivity extends BaseGameActivity implements IOnSceneTo
 	    };
 	
     public void writeVectorToLog( Vector2 pVector , String pStr){
-    	Log.i("flag", pStr + "  pVector=" + pVector.x  +" y:" +pVector.y );
+    	 	Log.i("flag", pStr + "  pVector=" + pVector.x  +" y:" +pVector.y );
     }
     
 	private Body addFace( int count){

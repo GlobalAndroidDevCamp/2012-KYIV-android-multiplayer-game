@@ -1,5 +1,7 @@
 package com.frosix;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +20,7 @@ import org.anddev.andengine.entity.scene.Scene.IOnSceneTouchListener;
 import org.anddev.andengine.entity.shape.Shape;
 import org.anddev.andengine.entity.sprite.AnimatedSprite;
 import org.anddev.andengine.extension.multiplayer.protocol.adt.message.IMessage;
+import org.anddev.andengine.extension.multiplayer.protocol.adt.message.Message;
 import org.anddev.andengine.extension.multiplayer.protocol.shared.BluetoothSocketConnection;
 import org.anddev.andengine.extension.multiplayer.protocol.shared.Connector;
 import org.anddev.andengine.extension.physics.box2d.PhysicsConnector;
@@ -53,13 +56,27 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private Scene mScene;
 	private PhysicsWorld mPhysicsWorld;
 	private Map<Integer ,Body> bodyMap = new HashMap<Integer,Body>();
-
-	private Body rectBody ;
+	
+	Rectangle selfRect;
+	private Body selfRectBody ;
+	
+	Rectangle enemyRect;
+	private Body enemyRectBody ;
+	
 	private Body globBody ;
 	
-	Rectangle rect;
+	
 	private boolean moveFlag =false;
 	private boolean isRight =false;
+	
+	private boolean moveEnemyFlag =false;
+	private boolean isEnemyRight =false;
+	
+	@SuppressWarnings("serial")
+	private Map<Short, Class<? extends IMessage>> messageMap = new HashMap<Short, Class<? extends IMessage>>() {{
+		put(FLAG_MESSAGE_COMMON_MOVE_PLATFORM, MovePlatformCommonMessage.class);
+	}};
+	
 	//Const 
 	private static final FixtureDef FIXTURE_DEF = PhysicsFactory.createFixtureDef(1, 0.7f, 0.5f);
 	//
@@ -150,7 +167,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			
 			@Override
 			public void onUpdate(float pSecondsElapsed) {
-				movePlatform(moveFlag ,isRight )		;		
+				moveSelfPlatform(moveFlag ,isRight );	
+				moveEnemyPlatform(moveEnemyFlag , isEnemyRight);
 			}
 		});
 		
@@ -220,14 +238,18 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		float rectWidth = 150;
 		float rectHeight = 20;
 		
-		rect = new Rectangle(0, CAMERA_HEIGHT - rectHeight , rectWidth, rectHeight);
-		rectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, rect, BodyType.KinematicBody, PhysicsFactory.createFixtureDef(1, 1.2f, 0.5f));
-		rectBody.setTransform(0, (CAMERA_HEIGHT - rectHeight) /32, 0);
-		rect.setColor(255, 255, 255);
+		selfRect = new Rectangle(0, CAMERA_HEIGHT - rectHeight , rectWidth, rectHeight);
+		selfRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, selfRect, BodyType.KinematicBody, PhysicsFactory.createFixtureDef(1, 1.2f, 0.5f));
+		selfRectBody.setTransform(0, (CAMERA_HEIGHT - rectHeight) /32, 0);
+				
+		this.mScene.attachChild(selfRect);
+		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(selfRect, selfRectBody, true, true));
 		
-		this.mScene.attachChild(rect);
-		mScene.registerTouchArea(rect);
-		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(rect, rectBody, true, true));
+		enemyRect = new Rectangle(0 , 0 , rectWidth, rectHeight);
+		enemyRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, enemyRect, BodyType.KinematicBody, PhysicsFactory.createFixtureDef(1, 1.2f, 0.5f));
+		enemyRectBody.setTransform(0, 0, 0);
+		this.mScene.attachChild(enemyRect);
+		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(enemyRect, enemyRectBody, true, true));
 	}
 	
 	@Override
@@ -236,11 +258,11 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			moveFlag = true;
 			if(pSceneTouchEvent.getX() > CAMERA_WIDTH/2){
 				isRight = true;
-				if((rect.getX() + rect.getWidth()) > CAMERA_WIDTH){
+				if((selfRect.getX() + selfRect.getWidth()) > CAMERA_WIDTH){
 					moveFlag = false;
 				}
 			}
-			else if (rect.getX() > 0){
+			else if (selfRect.getX() > 0){
 				isRight = false;
 				}
 				else{
@@ -250,34 +272,104 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		else{
 			moveFlag = false;
 		}
+		MovePlatformCommonMessage mMesageToSend = (MovePlatformCommonMessage) getMessage(FLAG_MESSAGE_COMMON_MOVE_PLATFORM);
+		mMesageToSend.set(0, isRight, moveFlag);
+		sendMessage(mMesageToSend);
 		return true;
 	}
 	
 
-	public void movePlatform( boolean pMoveFlag , boolean pIsRight){
+	public void moveSelfPlatform( boolean pMoveFlag , boolean pIsRight){
 		if(pMoveFlag){
 			if(pIsRight){
-				rectBody.setLinearVelocity(10, 0);
+				selfRectBody.setLinearVelocity(10, 0);
 			}
 			else{
-				rectBody.setLinearVelocity(-10 , 0);
+				selfRectBody.setLinearVelocity(-10 , 0);
 			}
 		}
 		else{
-			rectBody.setLinearVelocity(0, 0);
+			selfRectBody.setLinearVelocity(0, 0);
 		}
 	}
 
+	public void moveEnemyPlatform( boolean pMoveFlag , boolean pIsRight){
+		if(pMoveFlag){
+			if(pIsRight){
+				enemyRectBody.setLinearVelocity(10, 0);
+			}
+			else{
+				enemyRectBody.setLinearVelocity(-10 , 0);
+			}
+		}
+		else{
+			enemyRectBody.setLinearVelocity(0, 0);
+		}
+	}
+	
 	@Override
 	public void onHandleMessage(
 			Connector<BluetoothSocketConnection> pConnector,
 			ICommonMessage pMessage) throws IOException {
 		
+		if (pMessage instanceof MoveSpriteCommonMessage) {
+			MovePlatformCommonMessage mMessage = (MovePlatformCommonMessage)pMessage;
+			this.isEnemyRight = mMessage.isRight;
+			this.moveEnemyFlag = mMessage.moveFlag;
+		}
+		
 	}
 
 	@Override
 	protected Map<Short, Class<? extends IMessage>> getMessageMap() {
-		return null;
+		return messageMap;
+	}
+	
+	public static class MovePlatformCommonMessage extends Message implements ICommonMessage {
+		public int mID;
+		public boolean moveFlag;
+		public boolean isRight;
+		
+		public MovePlatformCommonMessage() {	
+		}
+		
+		public MovePlatformCommonMessage(int pID ,boolean isRight , boolean moveFlag){
+			this.mID = pID ;
+			this.isRight = isRight;
+			this.moveFlag = moveFlag;
+		}
+		
+		
+		public void set(int pID ,boolean isRight , boolean moveFlag) {
+			this.mID = pID;
+			this.isRight = isRight;
+			this.moveFlag = moveFlag;
+		}
+		
+		@Override
+		public short getFlag() {
+			return ConstantStorage.FLAG_MESSAGE_COMMON_MOVE_PLATFORM;
+		}
+
+		
+		@Override
+		protected void onReadTransmissionData(DataInputStream pDataInputStream)
+				throws IOException {
+			this.mID = pDataInputStream.readInt();
+			this.isRight = pDataInputStream.readBoolean();
+			this.moveFlag = pDataInputStream.readBoolean();
+			
+		}
+
+		@Override
+		protected void onWriteTransmissionData(
+				DataOutputStream pDataOutputStream) throws IOException {
+			pDataOutputStream.writeInt(this.mID);
+			pDataOutputStream.writeBoolean(this.isRight);
+			pDataOutputStream.writeBoolean(this.moveFlag);
+			
+		}
+		
 	}
 	
 }
