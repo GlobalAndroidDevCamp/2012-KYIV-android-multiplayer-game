@@ -346,13 +346,15 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			Connector<BluetoothSocketConnection> pConnector,
 			ICommonMessage pMessage) throws IOException {
 		if (pMessage instanceof MovePlatformCommonMessage) {
+			Log.i("flag", "message handled MovePlatformCommonMessage "  );
 			MovePlatformCommonMessage mMessage = (MovePlatformCommonMessage)pMessage;
 			this.isEnemyRight = mMessage.isRight;
 			this.moveEnemyFlag = mMessage.moveFlag;
-			Log.i("flag", "message handled" + mMessage.moveFlag + " " +mMessage.isRight );
+			
 			return;
 		}
 		if (pMessage instanceof SynchronizingMessage) {
+			Log.i("flag", "message handled SynchronizingMessage "  );
 			synchronizeGame((SynchronizingMessage) pMessage);
 			return;
 		}
