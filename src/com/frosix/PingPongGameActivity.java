@@ -338,8 +338,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		}
 		globBody.setTransform(pMessage.ballPos, 0);
 		globBody.setLinearVelocity(pMessage.ballVelocity);
-		if( (abs(selfRectBody.getPosition().x) - abs(pMessage.platformPos.x)) > 1 ){
-			selfRectBody.setTransform(pMessage.platformPos, 0);
+		if( (abs(enemyRectBody.getPosition().x) - abs(pMessage.platformPos.x)) > 1 ){
+			enemyRectBody.setTransform(pMessage.platformPos, 0);
 		}
 	}
 	
