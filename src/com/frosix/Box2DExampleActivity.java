@@ -189,11 +189,11 @@ public class Box2DExampleActivity extends BaseGameActivity implements IOnSceneTo
 				ball = contact.getFixtureA().getBody().getType().equals(BodyType.DynamicBody) ? contact.getFixtureA().getBody() : contact.getFixtureB().getBody();
 				otherBody =  ball==contact.getFixtureA().getBody() ? contact.getFixtureB().getBody() : contact.getFixtureA().getBody();
 				
-//				if(otherBody.getUserData()!= null){
-//					Vector2 local = otherBody.getLocalVector(ball.getLinearVelocity());
-//					writeVectorToLog(local, "collide local Vector ");
-//					writeVectorToLog(ball.getLinearVelocity(), "collide Velocity Vector ");
-//				}
+				if(otherBody.getUserData()!= null){
+					Vector2 local = otherBody.getLocalVector(ball.getLinearVelocity());
+					writeVectorToLog(local, "collide local Vector ");
+					writeVectorToLog(ball.getLinearVelocity(), "collide Velocity Vector ");
+				}
 			}
 		});
 		

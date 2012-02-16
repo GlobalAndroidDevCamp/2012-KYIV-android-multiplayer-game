@@ -44,7 +44,7 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.frosix.protocol.adt.message.ICommonMessage;
 import com.frosix.protocol.adt.message.MoveSpriteCommonMessage;
-
+import static java.lang.Math.*;
 public class PingPongGameActivity extends BaseMultiplayerGameActivity implements IOnSceneTouchListener {
 	
 	private static int CAMERA_HEIGHT;
@@ -73,15 +73,21 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	
 	private boolean isAlreadyStarted = false ;
 	
+	//Const 
+		private static final FixtureDef FIXTURE_WALL = PhysicsFactory.createFixtureDef(1, 1f, 0f);
+		private static final FixtureDef FIXTURE_PLATFORM = PhysicsFactory.createFixtureDef(1f, 1f, 1f);
+		private static final FixtureDef FIXTURE_BALL = PhysicsFactory.createFixtureDef(1, 1f, 1f);
+		//
+		
+		private boolean flag;
+	
 	@SuppressWarnings("serial")
 	private Map<Short, Class<? extends ICommonMessage>> messageMap = new HashMap<Short, Class<? extends ICommonMessage>>() {{
 		put(FLAG_MESSAGE_COMMON_MOVE_PLATFORM, MovePlatformCommonMessage.class);
 		put(FLAG_MESSAGE_SYNCHRONIZING , SynchronizingMessage.class);
 	}};
 	
-	//Const 
-	private static final FixtureDef FIXTURE_DEF = PhysicsFactory.createFixtureDef(1, 0.7f, 0.5f);
-	//
+	
 	
 	@Override
 	public Engine onLoadEngine() {
@@ -124,11 +130,11 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		left.setRotation(90);
 		final Shape right = new Rectangle(CAMERA_WIDTH - 2, 0, 2, CAMERA_HEIGHT);
 		
-		final FixtureDef wallFixtureDef = PhysicsFactory.createFixtureDef(0, 0.3f, 0.5f);
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, ground, BodyType.StaticBody, wallFixtureDef);
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, roof, BodyType.StaticBody, wallFixtureDef);
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, left, BodyType.StaticBody, wallFixtureDef);
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, right, BodyType.StaticBody, wallFixtureDef);
+	
+		PhysicsFactory.createBoxBody(this.mPhysicsWorld, ground, BodyType.StaticBody, FIXTURE_WALL);
+		PhysicsFactory.createBoxBody(this.mPhysicsWorld, roof, BodyType.StaticBody, FIXTURE_WALL);
+		PhysicsFactory.createBoxBody(this.mPhysicsWorld, left, BodyType.StaticBody, FIXTURE_WALL).setUserData("left");
+		PhysicsFactory.createBoxBody(this.mPhysicsWorld, right, BodyType.StaticBody, FIXTURE_WALL).setUserData("right");
 
 		this.mScene.attachChild(ground);
 		this.mScene.attachChild(roof);
@@ -163,13 +169,17 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			}
 		});
 		
-		mScene.registerUpdateHandler(new TimerHandler (0.2f, true ,  new ITimerCallback() {
+		mScene.registerUpdateHandler(new TimerHandler (0.2f, false ,  new ITimerCallback() {
 			
+			
+
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
+			if(flag){
 			SynchronizingMessage syncMes= (SynchronizingMessage) getMessage(FLAG_MESSAGE_SYNCHRONIZING);
 			syncMes.set(true, globBody.getPosition(), globBody.getLinearVelocity());
 			sendMessage	(syncMes);
+			}
 			}
 		}));
 		
@@ -200,6 +210,14 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				
 				ball = contact.getFixtureA().getBody().getType().equals(BodyType.DynamicBody) ? contact.getFixtureA().getBody() : contact.getFixtureB().getBody();
 				otherBody =  ball==contact.getFixtureA().getBody() ? contact.getFixtureB().getBody() : contact.getFixtureA().getBody();
+				if(otherBody.getUserData() != null ){
+					if(otherBody.getUserData().equals("left") || otherBody.getUserData().equals("right")){
+						Vector2 velocityVec = ball.getLinearVelocity();
+						if(abs(velocityVec.y) < 3 ){
+							ball.setLinearVelocity(velocityVec.set(velocityVec.x , signum(velocityVec.y)* (abs(velocityVec.y) +6 ) ));
+						}
+					}
+				}
 			}
 		});
 		
@@ -218,7 +236,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 		final AnimatedSprite face = new AnimatedSprite(0, 0, this.mCircleFaceTextureRegion);
 		face.setScale(1.5f);
-		final Body body = PhysicsFactory.createCircleBody(this.mPhysicsWorld, face, BodyType.DynamicBody, PhysicsFactory.createFixtureDef(1, 1f, 0.5f));
+		final Body body = PhysicsFactory.createCircleBody(this.mPhysicsWorld, face, BodyType.DynamicBody, FIXTURE_BALL);
 		
 		//Physicworld coordinates smaller then screen coord.
 		body.setTransform(240 /32 , 400/ 32, 0);
@@ -241,7 +259,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 		
 		selfRect = new Rectangle(0, 0 , rectWidth, rectHeight);
-		selfRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, selfRect, BodyType.KinematicBody, PhysicsFactory.createFixtureDef(1, 1.1f, 0.5f));
+		selfRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, selfRect, BodyType.KinematicBody, FIXTURE_PLATFORM);
 		
 				
 		this.mScene.attachChild(selfRect);
@@ -249,7 +267,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		selfRectBody.setTransform(0, (CAMERA_HEIGHT - rectHeight) /32 , 0);
 		
 		enemyRect = new Rectangle(0 , 0 , rectWidth, rectHeight);
-		enemyRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, enemyRect, BodyType.KinematicBody, PhysicsFactory.createFixtureDef(1, 1.1f, 0.5f));
+		enemyRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, enemyRect, BodyType.KinematicBody, FIXTURE_PLATFORM);
 		this.mScene.attachChild(enemyRect);
 		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(enemyRect, enemyRectBody, true, true , 32 ));
 		enemyRectBody.setTransform(2/32, 2/32, 0);
@@ -341,6 +359,13 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	}
 
 	@Override
+	public void onStarted(Connector<?> pConnector) {
+		super.onStarted(pConnector);
+		flag = true;	
+				
+	}
+	
+	@Override
 	protected Map<Short, Class<? extends ICommonMessage>> getMessageMap() {
 		return messageMap;
 	}
@@ -397,6 +422,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		public boolean gameStart ;
 		public Vector2 ballPos;
 		public Vector2 ballVelocity;
+		
+		public SynchronizingMessage () {}
 		
 		public void set(boolean gameStart , Vector2 ballPos , Vector2 ballVelocity) {
 			this.gameStart = gameStart;
