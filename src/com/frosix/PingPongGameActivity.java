@@ -71,9 +71,12 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private boolean moveEnemyFlag =false;
 	private boolean isEnemyRight =false;
 	
+	private boolean isAlreadyStarted = false ;
+	
 	@SuppressWarnings("serial")
 	private Map<Short, Class<? extends ICommonMessage>> messageMap = new HashMap<Short, Class<? extends ICommonMessage>>() {{
 		put(FLAG_MESSAGE_COMMON_MOVE_PLATFORM, MovePlatformCommonMessage.class);
+		put(FLAG_MESSAGE_SYNCHRONIZING , SynchronizingMessage.class);
 	}};
 	
 	//Const 
@@ -133,19 +136,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		this.mScene.attachChild(right);
 
 		this.mScene.registerUpdateHandler(this.mPhysicsWorld);
-		
-		
-		mScene.setTouchAreaBindingEnabled(true);
-		
-		
-		mScene.registerUpdateHandler(new TimerHandler (2, false ,  new ITimerCallback() {
-			
-			@Override
-			public void onTimePassed(TimerHandler pTimerHandler) {
 				
-				makeEffect(globBody, new Vector2(0, 20));
-			}
-		}));
+		mScene.setTouchAreaBindingEnabled(true);
 		
 		mScene.setOnSceneTouchListener(this);	
 				
@@ -171,7 +163,17 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			}
 		});
 		
-		mPhysicsWorld.setContactListener(new ContactListener() {
+		mScene.registerUpdateHandler(new TimerHandler (0.2f, true ,  new ITimerCallback() {
+			
+			@Override
+			public void onTimePassed(TimerHandler pTimerHandler) {
+			SynchronizingMessage syncMes= (SynchronizingMessage) getMessage(FLAG_MESSAGE_SYNCHRONIZING);
+			syncMes.set(true, globBody.getPosition(), globBody.getLinearVelocity());
+			sendMessage	(syncMes);
+			}
+		}));
+		
+	mPhysicsWorld.setContactListener(new ContactListener() {
 			
 			@Override
 			public void preSolve(Contact contact, Manifold oldManifold) {
@@ -250,7 +252,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		enemyRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, enemyRect, BodyType.KinematicBody, PhysicsFactory.createFixtureDef(1, 1.1f, 0.5f));
 		this.mScene.attachChild(enemyRect);
 		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(enemyRect, enemyRectBody, true, true , 32 ));
-		enemyRectBody.setTransform(240/32, 2/32, 0);
+		enemyRectBody.setTransform(2/32, 2/32, 0);
 		
 		
 	
@@ -312,7 +314,12 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	}
 	
 	private void synchronizeGame(SynchronizingMessage pMessage) {
-		
+		if(pMessage.gameStart && !isAlreadyStarted ){
+			makeEffect(globBody, new Vector2(0, 20));
+			isAlreadyStarted = true;
+		}
+		globBody.setTransform(pMessage.ballPos, 0);
+		globBody.setLinearVelocity(pMessage.ballVelocity);
 	}
 	
 	@Override
@@ -389,10 +396,12 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 
 		public boolean gameStart ;
 		public Vector2 ballPos;
+		public Vector2 ballVelocity;
 		
-		public void set(boolean gameStart , Vector2 ballPos) {
+		public void set(boolean gameStart , Vector2 ballPos , Vector2 ballVelocity) {
 			this.gameStart = gameStart;
 			this.ballPos = ballPos;
+			this.ballVelocity = ballVelocity;
 		}
 		
 		@Override
@@ -406,6 +415,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			this.gameStart = pDataInputStream.readBoolean();
 			this.ballPos.x = pDataInputStream.readFloat();
 			this.ballPos.y = pDataInputStream.readFloat();
+			this.ballVelocity.x = pDataInputStream.readFloat();
+			this.ballVelocity.y = pDataInputStream.readFloat();
 		}
 
 		@Override
@@ -414,6 +425,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			pDataOutputStream.writeBoolean(this.gameStart);
 			pDataOutputStream.writeFloat(this.ballPos.x);
 			pDataOutputStream.writeFloat(this.ballPos.y);
+			pDataOutputStream.writeFloat(this.ballVelocity.x);
+			pDataOutputStream.writeFloat(this.ballVelocity.y);
 			
 		}
 	}
