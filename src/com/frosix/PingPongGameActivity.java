@@ -237,18 +237,23 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		float rectWidth = 150;
 		float rectHeight = 20;
 		
-		selfRect = new Rectangle(0, CAMERA_HEIGHT - rectHeight , rectWidth, rectHeight);
-		selfRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, selfRect, BodyType.KinematicBody, PhysicsFactory.createFixtureDef(1, 1.2f, 0.5f));
-		selfRectBody.setTransform(0, (CAMERA_HEIGHT - rectHeight) /32, 0);
+		
+		selfRect = new Rectangle(0, 0 , rectWidth, rectHeight);
+		selfRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, selfRect, BodyType.KinematicBody, PhysicsFactory.createFixtureDef(1, 1.1f, 0.5f));
+		
 				
 		this.mScene.attachChild(selfRect);
-		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(selfRect, selfRectBody, true, true));
+		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(selfRect, selfRectBody, true, true , 32));
+		selfRectBody.setTransform(0, (CAMERA_HEIGHT - rectHeight) /32 , 0);
 		
 		enemyRect = new Rectangle(0 , 0 , rectWidth, rectHeight);
-		enemyRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, enemyRect, BodyType.KinematicBody, PhysicsFactory.createFixtureDef(1, 1.2f, 0.5f));
-		enemyRectBody.setTransform(0, 0, 0);
+		enemyRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, enemyRect, BodyType.KinematicBody, PhysicsFactory.createFixtureDef(1, 1.1f, 0.5f));
 		this.mScene.attachChild(enemyRect);
-		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(enemyRect, enemyRectBody, true, true));
+		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(enemyRect, enemyRectBody, true, true , 32 ));
+		enemyRectBody.setTransform(240/32, 2/32, 0);
+		
+		
+	
 	}
 	
 	@Override
@@ -306,15 +311,23 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		}
 	}
 	
+	private void synchronizeGame(SynchronizingMessage pMessage) {
+		
+	}
+	
 	@Override
 	public void onHandleMessage(
 			Connector<BluetoothSocketConnection> pConnector,
 			ICommonMessage pMessage) throws IOException {
-		if (pMessage instanceof MoveSpriteCommonMessage) {
+		if (pMessage instanceof MovePlatformCommonMessage) {
 			MovePlatformCommonMessage mMessage = (MovePlatformCommonMessage)pMessage;
 			this.isEnemyRight = mMessage.isRight;
 			this.moveEnemyFlag = mMessage.moveFlag;
 			Log.i("flag", "message handled" + mMessage.moveFlag + " " +mMessage.isRight );
+			return;
+		}
+		if (pMessage instanceof SynchronizingMessage) {
+			synchronizeGame((SynchronizingMessage) pMessage);
 			return;
 		}
 		super.onHandleMessage(pConnector, pMessage);
@@ -371,5 +384,40 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		}
 		
 	}
+	
+	public static class SynchronizingMessage extends Message implements ICommonMessage {
+
+		public boolean gameStart ;
+		public Vector2 ballPos;
+		
+		public void set(boolean gameStart , Vector2 ballPos) {
+			this.gameStart = gameStart;
+			this.ballPos = ballPos;
+		}
+		
+		@Override
+		public short getFlag() {
+			return ConstantStorage.FLAG_MESSAGE_SYNCHRONIZING;
+		}
+
+		@Override
+		protected void onReadTransmissionData(DataInputStream pDataInputStream)
+				throws IOException {
+			this.gameStart = pDataInputStream.readBoolean();
+			this.ballPos.x = pDataInputStream.readFloat();
+			this.ballPos.y = pDataInputStream.readFloat();
+		}
+
+		@Override
+		protected void onWriteTransmissionData(
+				DataOutputStream pDataOutputStream) throws IOException {
+			pDataOutputStream.writeBoolean(this.gameStart);
+			pDataOutputStream.writeFloat(this.ballPos.x);
+			pDataOutputStream.writeFloat(this.ballPos.y);
+			
+		}
+	}
+	
+	
 	
 }
