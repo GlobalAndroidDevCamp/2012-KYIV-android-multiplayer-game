@@ -79,7 +79,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		private static final FixtureDef FIXTURE_BALL = PhysicsFactory.createFixtureDef(1, 1f, 1f);
 		//
 		
-		private boolean flag;
+		private boolean flag = false;
 	
 	@SuppressWarnings("serial")
 	private Map<Short, Class<? extends ICommonMessage>> messageMap = new HashMap<Short, Class<? extends ICommonMessage>>() {{
@@ -169,7 +169,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			}
 		});
 		
-		mScene.registerUpdateHandler(new TimerHandler (0.2f, false ,  new ITimerCallback() {
+		mScene.registerUpdateHandler(new TimerHandler (0.2f, true ,  new ITimerCallback() {
 			
 			
 
@@ -177,7 +177,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			public void onTimePassed(TimerHandler pTimerHandler) {
 			if(flag){
 			SynchronizingMessage syncMes= (SynchronizingMessage) getMessage(FLAG_MESSAGE_SYNCHRONIZING);
-			syncMes.set(true, globBody.getPosition(), globBody.getLinearVelocity());
+			syncMes.set(true, globBody.getPosition(), globBody.getLinearVelocity() , selfRectBody.getPosition());
 			sendMessage	(syncMes);
 			}
 			}
@@ -338,6 +338,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		}
 		globBody.setTransform(pMessage.ballPos, 0);
 		globBody.setLinearVelocity(pMessage.ballVelocity);
+		selfRectBody.setTransform(pMessage.platformPos, 0);
 	}
 	
 	@Override
@@ -422,13 +423,15 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		public boolean gameStart ;
 		public Vector2 ballPos;
 		public Vector2 ballVelocity;
+		public Vector2 platformPos;
 		
 		public SynchronizingMessage () {}
 		
-		public void set(boolean gameStart , Vector2 ballPos , Vector2 ballVelocity) {
+		public void set(boolean gameStart , Vector2 ballPos , Vector2 ballVelocity ,Vector2 platformPos) {
 			this.gameStart = gameStart;
 			this.ballPos = ballPos;
 			this.ballVelocity = ballVelocity;
+			this.platformPos = platformPos;
 		}
 		
 		@Override
@@ -444,6 +447,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			this.ballPos.y = pDataInputStream.readFloat();
 			this.ballVelocity.x = pDataInputStream.readFloat();
 			this.ballVelocity.y = pDataInputStream.readFloat();
+			this.platformPos.x = pDataInputStream.readFloat();
+			this.platformPos.y = pDataInputStream.readFloat();
 		}
 
 		@Override
@@ -454,7 +459,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			pDataOutputStream.writeFloat(this.ballPos.y);
 			pDataOutputStream.writeFloat(this.ballVelocity.x);
 			pDataOutputStream.writeFloat(this.ballVelocity.y);
-			
+			pDataOutputStream.writeFloat(this.platformPos.x);
+			pDataOutputStream.writeFloat(this.platformPos.y);
 		}
 	}
 	
