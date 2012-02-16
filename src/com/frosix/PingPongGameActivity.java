@@ -169,7 +169,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			}
 		});
 		
-		mScene.registerUpdateHandler(new TimerHandler (0.2f, true ,  new ITimerCallback() {
+		mScene.registerUpdateHandler(new TimerHandler (0.5f, true ,  new ITimerCallback() {
 			
 			
 
@@ -338,7 +338,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		}
 		globBody.setTransform(pMessage.ballPos, 0);
 		globBody.setLinearVelocity(pMessage.ballVelocity);
-		selfRectBody.setTransform(pMessage.platformPos, 0);
+		if( (abs(selfRectBody.getPosition().x) - abs(pMessage.platformPos.x)) > 1 ){
+			selfRectBody.setTransform(pMessage.platformPos, 0);
+		}
 	}
 	
 	@Override
