@@ -373,8 +373,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	
 	//	public SyncContainer[] container =;
 	
-		public Vector2 platformPos = new Vector2();
-		public Vector2 platformVelocity = new Vector2();
+		public Vector2 platformPos;
+		public Vector2 platformVelocity ;
 		
 		public SynchronizingMessage () {}
 		
