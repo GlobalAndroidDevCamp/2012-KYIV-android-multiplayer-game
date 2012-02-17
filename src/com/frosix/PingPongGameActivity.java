@@ -197,13 +197,13 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 						
 		this.mScene.attachChild(selfRect);
 		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(selfRect, selfRectBody, true, true ));
-		selfRectBody.setTransform(rectWidth/2, (CAMERA_HEIGHT - rectHeight /2 ), 0);
+		selfRectBody.setTransform(rectWidth/2 / 32, (CAMERA_HEIGHT - rectHeight /2 ) /32, 0);
 		
 		enemyRect = new Rectangle(0 , 0 , rectWidth, rectHeight);
 		enemyRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, enemyRect, BodyType.KinematicBody, FIXTURE_PLATFORM);
 		this.mScene.attachChild(enemyRect);
 		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(enemyRect, enemyRectBody, true, true));
-		enemyRectBody.setTransform(rectWidth /2, rectHeight /2 , 0);
+		enemyRectBody.setTransform(rectWidth /2 /32 , rectHeight /2 /32 , 0);
 			
 	}
 	
