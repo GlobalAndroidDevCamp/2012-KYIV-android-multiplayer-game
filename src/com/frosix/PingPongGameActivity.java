@@ -164,16 +164,6 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				moveEnemyPlatform(moveEnemyFlag , isEnemyRight);
 				}
 		});
-		
-		mScene.registerUpdateHandler(new TimerHandler(5 ,false ,new ITimerCallback() {
-			
-			@Override
-			public void onTimePassed(TimerHandler pTimerHandler) {
-				makeEffect(	globBbody, new Vector2(0, 20));
-				
-			}
-		}));
-	
 	}
 	
 	public void makeEffect(Body pBody , Vector2 pVector ){
