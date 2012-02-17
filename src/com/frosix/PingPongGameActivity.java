@@ -172,14 +172,14 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
 				
-//				SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
-//				syncMessageToSend.set(selfRectBody.getPosition() ,selfRectBody.getLinearVelocity() );
-//				sendMessage(syncMessageToSend);
-//				Log.i("flag" , "message sent");
+				SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
+				syncMessageToSend.set(selfRectBody.getPosition().x ,selfRectBody.getPosition().y, selfRectBody.getLinearVelocity().x , selfRectBody.getLinearVelocity().y );
+				sendMessage(syncMessageToSend);
+				Log.i("flag" , "message sent");
 				
-				TouchControlMessage messageToSend = (TouchControlMessage)getMessage(FLAG_MESSAGE_TOUCH_CONTROL);
-				messageToSend.set(117 , 711 , 747);
-				sendMessage(messageToSend);
+//				TouchControlMessage messageToSend = (TouchControlMessage)getMessage(FLAG_MESSAGE_TOUCH_CONTROL);
+//				messageToSend.set(117 , 711 , 747);
+//				sendMessage(messageToSend);
 				
 			}
 		}));
@@ -312,8 +312,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 	private void synchronizeGame(SynchronizingMessage pMessage) {
 		if ( enemyRectBody!= null){
-			enemyRectBody.setTransform(new Vector2(CAMERA_WIDTH/32 - pMessage.platformPos.x , 0) , 0);
-			enemyRectBody.setLinearVelocity(pMessage.platformVelocity.mul(-1));
+			enemyRectBody.setTransform(new Vector2(CAMERA_WIDTH/32 - pMessage.platformPosX , 0) , 0);
+			enemyRectBody.setLinearVelocity(new Vector2(-pMessage.platformVelocityX, 0));
 		}
 		
 	}
@@ -374,16 +374,18 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	public static class SynchronizingMessage extends CommonMessage {
 
 	
-	//	public SyncContainer[] container =;
-	
-		public Vector2 platformPos = new Vector2();
-		public Vector2 platformVelocity = new Vector2(); ;
+		float platformPosX ;
+		float platformPosY ;
+		float platformVelocityX;
+		float platformVelocityY;
 		
 		public SynchronizingMessage () {}
 		
-		public void set(Vector2 platformPos ,Vector2 platformVelocity) {
-			this.platformPos = platformPos;
-			this.platformVelocity = platformVelocity;
+		public void set(float platformPosX , float platformPosY , float platformVelocityX , float platformVelocityY ) {
+			this.platformPosX = platformPosX;
+			this.platformPosY = platformPosY;
+			this.platformVelocityX = platformVelocityX;
+			this.platformVelocityY = platformVelocityY;
 		}
 		
 		@Override
@@ -395,20 +397,20 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		protected void onReadTransmissionData(DataInputStream pDataInputStream)
 				throws IOException {
 	
-			this.platformPos.x = pDataInputStream.readFloat();
-			this.platformPos.y = pDataInputStream.readFloat();
-			this.platformVelocity.x = pDataInputStream.readFloat();
-			this.platformVelocity.y = pDataInputStream.readFloat();
+			this.platformPosX = pDataInputStream.readFloat();
+			this.platformPosX = pDataInputStream.readFloat();
+			this.platformVelocityX = pDataInputStream.readFloat();
+			this.platformVelocityY = pDataInputStream.readFloat();
 		}
 
 		@Override
 		protected void onWriteTransmissionData(
 				DataOutputStream pDataOutputStream) throws IOException {
 		
-			pDataOutputStream.writeFloat(this.platformPos.x);
-			pDataOutputStream.writeFloat(this.platformPos.y);
-			pDataOutputStream.writeFloat(this.platformVelocity.x);
-			pDataOutputStream.writeFloat(this.platformVelocity.y);
+			pDataOutputStream.writeFloat(this.platformPosX);
+			pDataOutputStream.writeFloat(this.platformPosY);
+			pDataOutputStream.writeFloat(platformVelocityX);
+			pDataOutputStream.writeFloat(platformVelocityY);
 		}
 	}
 	
