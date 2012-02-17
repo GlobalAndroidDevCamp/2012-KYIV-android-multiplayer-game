@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.anddev.andengine.engine.Engine;
@@ -122,6 +123,10 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	public Scene onLoadScene() {
 		this.mScene = new Scene();
 		this.mPhysicsWorld = new PhysicsWorld(new Vector2(0, 0), false);
+//		for( Iterator<Body> x =  mPhysicsWorld.getBodies() ; x.hasNext(); ){
+//			x.next().
+//		}
+			
 		
 		final Shape ground = new Rectangle(0, CAMERA_HEIGHT - 2, CAMERA_WIDTH, 2);
 		final Shape roof = new Rectangle(0, 0, CAMERA_WIDTH, 2);
@@ -164,6 +169,17 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				moveEnemyPlatform(moveEnemyFlag , isEnemyRight);
 				}
 		});
+		
+		mScene.registerUpdateHandler(new TimerHandler(0.2f,true, new ITimerCallback() {
+			
+			@Override
+			public void onTimePassed(TimerHandler pTimerHandler) {
+				SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
+				syncMessageToSend.set(selfRectBody.getLinearVelocity() ,selfRectBody.getLinearVelocity() );
+				sendMessage(syncMessageToSend);
+				
+			}
+		}));
 	}
 	
 	public void makeEffect(Body pBody , Vector2 pVector ){
@@ -224,7 +240,6 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		if(pMoveFlag){
 			if(pIsRight && (selfRect.getX() + selfRect.getWidth()) < CAMERA_WIDTH) {
 				selfRectBody.setLinearVelocity(10, 0);
-				Log.i("flag", "vel right " );
 			}
 			else if(!pIsRight && (selfRect.getX() > 0))	{
 				selfRectBody.setLinearVelocity(-10 , 0);
@@ -266,6 +281,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			float mX = ((TouchControlMessage) pMessage).x;
 			float mY =((TouchControlMessage) pMessage).y;
 			
+		
 			if(((TouchControlMessage) pMessage).action != TouchEvent.ACTION_UP){
 				moveEnemyFlag = true;
 				if(mX > CAMERA_WIDTH/2){
@@ -281,10 +297,23 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			
 			return;
 		}
+		
+		if(pMessage instanceof SynchronizingMessage){
+			synchronizeGame((SynchronizingMessage)pMessage);
+			
+		}
 		super.onHandleMessage(pConnector, pMessage);
 	}
 
 		
+	private void synchronizeGame(SynchronizingMessage pMessage) {
+		if ( enemyRectBody!= null){
+			enemyRectBody.setTransform(pMessage.platformPos, 0);
+			enemyRectBody.setLinearVelocity(pMessage.platformVelocity);
+		}
+		
+	}
+
 	@Override
 	protected Map<Short, Class<? extends ICommonMessage>> getMessageMap() {
 		return messageMap;
@@ -340,17 +369,16 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	
 	public static class SynchronizingMessage extends CommonMessage {
 
-		public boolean gameStart ;
-		public Vector2 ballPos = new Vector2();
-		public Vector2 ballVelocity = new Vector2();
+	
+	//	public SyncContainer[] container =;
+	
 		public Vector2 platformPos = new Vector2();
+		public Vector2 platformVelocity = new Vector2();
 		
 		public SynchronizingMessage () {}
 		
-		public void set(boolean gameStart , Vector2 ballPos , Vector2 ballVelocity ,Vector2 platformPos) {
-			this.gameStart = gameStart;
-			this.ballPos = ballPos;
-			this.ballVelocity = ballVelocity;
+		public void set(Vector2 platformPos ,Vector2 platformVelocity) {
+			this.platformPos = platformPos;
 			this.platformPos = platformPos;
 		}
 		
@@ -362,26 +390,29 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		@Override
 		protected void onReadTransmissionData(DataInputStream pDataInputStream)
 				throws IOException {
-			this.gameStart = pDataInputStream.readBoolean();
-			this.ballPos.x = pDataInputStream.readFloat();
-			this.ballPos.y = pDataInputStream.readFloat();
-			this.ballVelocity.x = pDataInputStream.readFloat();
-			this.ballVelocity.y = pDataInputStream.readFloat();
+	
 			this.platformPos.x = pDataInputStream.readFloat();
 			this.platformPos.y = pDataInputStream.readFloat();
+			this.platformVelocity.x = pDataInputStream.readFloat();
+			this.platformVelocity.y = pDataInputStream.readFloat();
 		}
 
 		@Override
 		protected void onWriteTransmissionData(
 				DataOutputStream pDataOutputStream) throws IOException {
-			pDataOutputStream.writeBoolean(this.gameStart);
-			pDataOutputStream.writeFloat(this.ballPos.x);
-			pDataOutputStream.writeFloat(this.ballPos.y);
-			pDataOutputStream.writeFloat(this.ballVelocity.x);
-			pDataOutputStream.writeFloat(this.ballVelocity.y);
+		
 			pDataOutputStream.writeFloat(this.platformPos.x);
 			pDataOutputStream.writeFloat(this.platformPos.y);
+			pDataOutputStream.writeFloat(this.platformVelocity.x);
+			pDataOutputStream.writeFloat(this.platformVelocity.y);
 		}
+	}
+	
+	private static class SyncContainer{
+		public int iD;
+		public Vector2 positionI;
+		public Vector2 VelocityI;
+		
 	}
 	
 	
