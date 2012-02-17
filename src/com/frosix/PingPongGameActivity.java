@@ -308,7 +308,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 	private void synchronizeGame(SynchronizingMessage pMessage) {
 		if ( enemyRectBody!= null){
-			enemyRectBody.setTransform(new Vector2( 15 - pMessage.platformPos.x , 0) , pMessage.platformPos.y);
+			enemyRectBody.setTransform(new Vector2( 15 - pMessage.platformPos.x , 0) , 0);
 			enemyRectBody.setLinearVelocity(pMessage.platformVelocity.mul(-1));
 		}
 		
