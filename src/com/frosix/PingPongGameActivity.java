@@ -214,9 +214,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
 		
-		TouchControlMessage messageToSend = (TouchControlMessage)getMessage(FLAG_MESSAGE_TOUCH_CONTROL);
-		messageToSend.set(pSceneTouchEvent.getX() , pSceneTouchEvent.getY() , pSceneTouchEvent.getAction());
-		sendMessage(messageToSend);
+		
 		
 		if(!pSceneTouchEvent.isActionUp()){
 			moveSelfFlag = true;
@@ -230,6 +228,11 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		else{
 			moveSelfFlag = false;
 		}
+		
+		TouchControlMessage messageToSend = (TouchControlMessage)getMessage(FLAG_MESSAGE_TOUCH_CONTROL);
+		messageToSend.set(pSceneTouchEvent.getX() , pSceneTouchEvent.getY() , pSceneTouchEvent.getAction());
+		sendMessage(messageToSend);
+		
 		return true;
 	}
 	
