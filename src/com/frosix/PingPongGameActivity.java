@@ -123,10 +123,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	public Scene onLoadScene() {
 		this.mScene = new Scene();
 		this.mPhysicsWorld = new PhysicsWorld(new Vector2(0, 0), false);
-//		for( Iterator<Body> x =  mPhysicsWorld.getBodies() ; x.hasNext(); ){
-//			x.next().
-//		}
-			
+	
 		
 		final Shape ground = new Rectangle(0, CAMERA_HEIGHT - 2, CAMERA_WIDTH, 2);
 		final Shape roof = new Rectangle(0, 0, CAMERA_WIDTH, 2);
@@ -170,7 +167,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			}
 		});
 		
-		mScene.registerUpdateHandler(new TimerHandler(0.1f,true, new ITimerCallback() {
+		mScene.registerUpdateHandler(new TimerHandler(0.1f,true, new ITimerCallback() {	
 			
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
@@ -199,13 +196,13 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		selfRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, selfRect, BodyType.KinematicBody, FIXTURE_PLATFORM);
 						
 		this.mScene.attachChild(selfRect);
-		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(selfRect, selfRectBody, true, true ,1));
+		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(selfRect, selfRectBody, true, true ));
 		selfRectBody.setTransform(rectWidth/2, (CAMERA_HEIGHT - rectHeight /2 ), 0);
 		
 		enemyRect = new Rectangle(0 , 0 , rectWidth, rectHeight);
 		enemyRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, enemyRect, BodyType.KinematicBody, FIXTURE_PLATFORM);
 		this.mScene.attachChild(enemyRect);
-		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(enemyRect, enemyRectBody, true, true,1));
+		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(enemyRect, enemyRectBody, true, true));
 		enemyRectBody.setTransform(rectWidth /2, rectHeight /2 , 0);
 			
 	}
@@ -239,10 +236,10 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 		if(pMoveFlag){
 			if(pIsRight && (selfRect.getX() + selfRect.getWidth()) < CAMERA_WIDTH) {
-				selfRectBody.setLinearVelocity(320, 0);
+				selfRectBody.setLinearVelocity(10, 0);
 			}
 			else if(!pIsRight && (selfRect.getX() > 0))	{
-				selfRectBody.setLinearVelocity(-320 , 0);
+				selfRectBody.setLinearVelocity(-10 , 0);
 			} 
 			else{
 				selfRectBody.setLinearVelocity(0 , 0);	
@@ -309,7 +306,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 	private void synchronizeGame(SynchronizingMessage pMessage) {
 		if ( enemyRectBody!= null){
-			enemyRectBody.setTransform(new Vector2(480 - pMessage.platformPos.x , 0) , 0);
+			enemyRectBody.setTransform(new Vector2(CAMERA_WIDTH/32 - pMessage.platformPos.x , 0) , 0);
 			enemyRectBody.setLinearVelocity(pMessage.platformVelocity.mul(-1));
 		}
 		
