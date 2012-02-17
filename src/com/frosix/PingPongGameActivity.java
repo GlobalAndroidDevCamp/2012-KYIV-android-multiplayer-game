@@ -244,7 +244,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				enemyRectBody.setLinearVelocity(10, 0);
 				Log.i("flag", "vel right " );
 			}
-			else if(!pIsRight && (selfRect.getX() > 0))	{
+			else if(!pIsRight && (enemyRect.getX() > 0))	{
 				enemyRectBody.setLinearVelocity(-10 , 0);
 			} 
 			else{
