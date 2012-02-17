@@ -166,17 +166,17 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			@Override
 			public void onUpdate(float pSecondsElapsed) {
 				moveSelfPlatform(moveSelfFlag ,isSelfRight );	
-				moveEnemyPlatform(moveEnemyFlag , isEnemyRight);
-				}
+				//moveEnemyPlatform(moveEnemyFlag , isEnemyRight);
+			}
 		});
 		
 		mScene.registerUpdateHandler(new TimerHandler(0.1f,true, new ITimerCallback() {
 			
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
-//				SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
-//				syncMessageToSend.set(selfRectBody.getPosition() ,selfRectBody.getLinearVelocity() );
-//				sendMessage(syncMessageToSend);
+				SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
+				syncMessageToSend.set(selfRectBody.getPosition() ,selfRectBody.getLinearVelocity() );
+				sendMessage(syncMessageToSend);
 				
 			}
 		}));
@@ -195,27 +195,24 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		float rectWidth = 150;
 		float rectHeight = 20;
 		
-		
 		selfRect = new Rectangle(0, 0 , rectWidth, rectHeight);
 		selfRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, selfRect, BodyType.KinematicBody, FIXTURE_PLATFORM);
 						
 		this.mScene.attachChild(selfRect);
-		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(selfRect, selfRectBody, true, true));
-		selfRectBody.setTransform(5, (CAMERA_HEIGHT - rectHeight) /32 , 0);
+		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(selfRect, selfRectBody, true, true ,1));
+		selfRectBody.setTransform(rectWidth/2, (CAMERA_HEIGHT - rectHeight /2 ), 0);
 		
 		enemyRect = new Rectangle(0 , 0 , rectWidth, rectHeight);
 		enemyRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, enemyRect, BodyType.KinematicBody, FIXTURE_PLATFORM);
 		this.mScene.attachChild(enemyRect);
-		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(enemyRect, enemyRectBody, true, true));
-		enemyRectBody.setTransform(5, 2/32, 0);
+		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(enemyRect, enemyRectBody, true, true,1));
+		enemyRectBody.setTransform(rectWidth /2, rectHeight /2 , 0);
 			
 	}
 	
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
-		
-		
-		
+				
 		if(!pSceneTouchEvent.isActionUp()){
 			moveSelfFlag = true;
 			if(pSceneTouchEvent.getX() > CAMERA_WIDTH/2){
@@ -229,9 +226,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			moveSelfFlag = false;
 		}
 		
-		TouchControlMessage messageToSend = (TouchControlMessage)getMessage(FLAG_MESSAGE_TOUCH_CONTROL);
-		messageToSend.set(pSceneTouchEvent.getX() , pSceneTouchEvent.getY() , pSceneTouchEvent.getAction());
-		sendMessage(messageToSend);
+//		TouchControlMessage messageToSend = (TouchControlMessage)getMessage(FLAG_MESSAGE_TOUCH_CONTROL);
+//		messageToSend.set(pSceneTouchEvent.getX() , pSceneTouchEvent.getY() , pSceneTouchEvent.getAction());
+//		sendMessage(messageToSend);
 		
 		return true;
 	}
@@ -242,10 +239,10 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 		if(pMoveFlag){
 			if(pIsRight && (selfRect.getX() + selfRect.getWidth()) < CAMERA_WIDTH) {
-				selfRectBody.setLinearVelocity(10, 0);
+				selfRectBody.setLinearVelocity(320, 0);
 			}
 			else if(!pIsRight && (selfRect.getX() > 0))	{
-				selfRectBody.setLinearVelocity(-10 , 0);
+				selfRectBody.setLinearVelocity(-320 , 0);
 			} 
 			else{
 				selfRectBody.setLinearVelocity(0 , 0);	
@@ -312,7 +309,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 	private void synchronizeGame(SynchronizingMessage pMessage) {
 		if ( enemyRectBody!= null){
-			//enemyRectBody.setTransform(new Vector2( 15 - pMessage.platformPos.x , 0) , 0);
+			enemyRectBody.setTransform(new Vector2(480 - pMessage.platformPos.x , 0) , 0);
 			enemyRectBody.setLinearVelocity(pMessage.platformVelocity.mul(-1));
 		}
 		
