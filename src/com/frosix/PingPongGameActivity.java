@@ -170,12 +170,12 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				}
 		});
 		
-		mScene.registerUpdateHandler(new TimerHandler(0.2f,true, new ITimerCallback() {
+		mScene.registerUpdateHandler(new TimerHandler(0.1f,true, new ITimerCallback() {
 			
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
 				SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
-				syncMessageToSend.set(selfRectBody.getLinearVelocity() ,selfRectBody.getLinearVelocity() );
+				syncMessageToSend.set(selfRectBody.getPosition() ,selfRectBody.getLinearVelocity() );
 				sendMessage(syncMessageToSend);
 				
 			}
@@ -214,9 +214,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
 		
-		TouchControlMessage messageToSend = (TouchControlMessage)getMessage(FLAG_MESSAGE_TOUCH_CONTROL);
-		messageToSend.set(pSceneTouchEvent.getX() , pSceneTouchEvent.getY() , pSceneTouchEvent.getAction());
-		sendMessage(messageToSend);
+//		TouchControlMessage messageToSend = (TouchControlMessage)getMessage(FLAG_MESSAGE_TOUCH_CONTROL);
+//		messageToSend.set(pSceneTouchEvent.getX() , pSceneTouchEvent.getY() , pSceneTouchEvent.getAction());
+//		sendMessage(messageToSend);
 		
 		if(!pSceneTouchEvent.isActionUp()){
 			moveSelfFlag = true;
@@ -308,8 +308,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 	private void synchronizeGame(SynchronizingMessage pMessage) {
 		if ( enemyRectBody!= null){
-			enemyRectBody.setTransform(pMessage.platformPos, 0);
-			enemyRectBody.setLinearVelocity(pMessage.platformVelocity);
+			enemyRectBody.setTransform(new Vector2( 15 - pMessage.platformPos.x , 0) , pMessage.platformPos.y);
+			enemyRectBody.setLinearVelocity(pMessage.platformVelocity.mul(-1));
 		}
 		
 	}
@@ -379,7 +379,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 		public void set(Vector2 platformPos ,Vector2 platformVelocity) {
 			this.platformPos = platformPos;
-			this.platformPos = platformPos;
+			this.platformVelocity = platformVelocity;
 		}
 		
 		@Override
