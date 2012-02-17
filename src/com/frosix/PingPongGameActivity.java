@@ -398,7 +398,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				throws IOException {
 	
 			this.platformPosX = pDataInputStream.readFloat();
-			this.platformPosX = pDataInputStream.readFloat();
+			this.platformPosY = pDataInputStream.readFloat();
 			this.platformVelocityX = pDataInputStream.readFloat();
 			this.platformVelocityY = pDataInputStream.readFloat();
 		}
