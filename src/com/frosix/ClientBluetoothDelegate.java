@@ -47,8 +47,7 @@ public class ClientBluetoothDelegate extends AbstractBluetoothDelegate<ServerCon
 		bluetoothEndpoint.registerServerMessage(flag, messageClass, new IServerMessageHandler<BluetoothSocketConnection>() {
 			@Override
 			public void onHandleMessage(final ServerConnector<BluetoothSocketConnection> pServerConnector, final IServerMessage pServerMessage) throws IOException {
-				final ICommonMessage moveSpriteCommonMessage = (ICommonMessage)pServerMessage;
-				messageHandler.onHandleMessage(pServerConnector, moveSpriteCommonMessage);
+				messageHandler.onHandleMessage(pServerConnector, (ICommonMessage)pServerMessage);
 			}
 		});
 	}

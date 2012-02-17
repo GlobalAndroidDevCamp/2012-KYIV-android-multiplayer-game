@@ -8,7 +8,7 @@ import org.anddev.andengine.extension.multiplayer.protocol.adt.message.Message;
 
 import com.frosix.ConstantStorage;
 
-public class MoveSpriteCommonMessage extends Message implements ICommonMessage {
+public class MoveSpriteCommonMessage extends CommonMessage {
 	public int mID;
 	public float mX;
 	public float mY;

@@ -42,6 +42,7 @@ import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
+import com.frosix.protocol.adt.message.CommonMessage;
 import com.frosix.protocol.adt.message.ICommonMessage;
 import com.frosix.protocol.adt.message.MoveSpriteCommonMessage;
 import static java.lang.Math.*;
@@ -421,7 +422,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 	}
 	
-	public static class SynchronizingMessage extends Message implements ICommonMessage {
+	public static class SynchronizingMessage extends CommonMessage {
 
 		public boolean gameStart ;
 		public Vector2 ballPos = new Vector2();

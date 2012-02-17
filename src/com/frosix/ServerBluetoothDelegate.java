@@ -53,8 +53,7 @@ public class ServerBluetoothDelegate extends AbstractBluetoothDelegate<Bluetooth
 								public void onHandleMessage(
 										ClientConnector<BluetoothSocketConnection> pClientConnector,
 										IClientMessage pClientMessage) throws IOException {
-									ICommonMessage moveSpriteCommonMessage = (ICommonMessage)pClientMessage;
-									messageDescriptor.getMessageHandler().onHandleMessage(pClientConnector, moveSpriteCommonMessage);
+									messageDescriptor.getMessageHandler().onHandleMessage(pClientConnector, (ICommonMessage)pClientMessage);
 								}
 							});
 						}
