@@ -269,10 +269,10 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			if(((TouchControlMessage) pMessage).action != TouchEvent.ACTION_UP){
 				moveEnemyFlag = true;
 				if(mX > CAMERA_WIDTH/2){
-					isEnemyRight = true;
+					isEnemyRight = false;
 				}
 				else{
-				isEnemyRight = false;
+				isEnemyRight = true;
 				}
 			}
 			else{
