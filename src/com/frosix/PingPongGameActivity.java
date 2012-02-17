@@ -174,9 +174,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
-				SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
-				syncMessageToSend.set(selfRectBody.getPosition() ,selfRectBody.getLinearVelocity() );
-				sendMessage(syncMessageToSend);
+//				SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
+//				syncMessageToSend.set(selfRectBody.getPosition() ,selfRectBody.getLinearVelocity() );
+//				sendMessage(syncMessageToSend);
 				
 			}
 		}));
@@ -214,9 +214,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
 		
-//		TouchControlMessage messageToSend = (TouchControlMessage)getMessage(FLAG_MESSAGE_TOUCH_CONTROL);
-//		messageToSend.set(pSceneTouchEvent.getX() , pSceneTouchEvent.getY() , pSceneTouchEvent.getAction());
-//		sendMessage(messageToSend);
+		TouchControlMessage messageToSend = (TouchControlMessage)getMessage(FLAG_MESSAGE_TOUCH_CONTROL);
+		messageToSend.set(pSceneTouchEvent.getX() , pSceneTouchEvent.getY() , pSceneTouchEvent.getAction());
+		sendMessage(messageToSend);
 		
 		if(!pSceneTouchEvent.isActionUp()){
 			moveSelfFlag = true;
@@ -373,8 +373,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	
 	//	public SyncContainer[] container =;
 	
-		public Vector2 platformPos;
-		public Vector2 platformVelocity ;
+		public Vector2 platformPos = new Vector2();
+		public Vector2 platformVelocity = new Vector2(); ;
 		
 		public SynchronizingMessage () {}
 		
