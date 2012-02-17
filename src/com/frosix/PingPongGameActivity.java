@@ -299,6 +299,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		}
 		
 		if(pMessage instanceof SynchronizingMessage){
+			Log.i("flag", "message handled SynchronizingMessage ");
 			synchronizeGame((SynchronizingMessage)pMessage);
 			
 		}
@@ -308,7 +309,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 	private void synchronizeGame(SynchronizingMessage pMessage) {
 		if ( enemyRectBody!= null){
-			enemyRectBody.setTransform(new Vector2( 15 - pMessage.platformPos.x , 0) , 0);
+			//enemyRectBody.setTransform(new Vector2( 15 - pMessage.platformPos.x , 0) , 0);
 			enemyRectBody.setLinearVelocity(pMessage.platformVelocity.mul(-1));
 		}
 		
