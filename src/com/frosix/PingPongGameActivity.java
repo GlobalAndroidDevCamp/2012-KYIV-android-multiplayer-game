@@ -171,7 +171,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
 				SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
-				syncMessageToSend.set(selfRectBody.getPosition().x ,selfRectBody.getPosition().y, selfRectBody.getLinearVelocity().x , selfRectBody.getLinearVelocity().y );
+				syncMessageToSend.set(bodyToSync);
 				sendMessage(syncMessageToSend);	
 			}
 			
@@ -336,12 +336,14 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			
 			@Override
 			public void run() {
-				if ( enemyRectBody!= null){
-					enemyRectBody.setTransform(CAMERA_WIDTH /32 - pMessage.platformPos.x , 10/32  , 0);
-					enemyRectBody.setLinearVelocity(pMessage.platformVelocity.mul(-1));
+				for (SyncContainer container : pMessage.syncContainers) {
+					Body b = bodyToSync.get(container.getId());
+					Vector2 position = container.getPositionI();
+					b.setTransform(CAMERA_WIDTH/32 - position.x, CAMERA_HEIGHT/32 - position.y, 0);
+					b.setLinearVelocity(container.getVelocityI().mul(-1));
 				}
-				
 			}
+			
 		});
 	}
 
@@ -402,10 +404,22 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 
 	    List<SyncContainer> syncContainers = new ArrayList<SyncContainer>();
 		
-		public SynchronizingMessage () {}
+		public SynchronizingMessage () {
+			for (int i = 0; i < 2; i ++) {
+				syncContainers.add(new SyncContainer());
+			}
+		}
 		
 		public void set(Map<Byte ,Body> bodies) {
-			
+			syncContainers.clear();
+			int i = 0;
+			for (Map.Entry<Byte, Body> bodyEntry : bodies.entrySet()) {
+				SyncContainer container = syncContainers.get(i++);
+				container.setId(bodyEntry.getKey());
+				Body body = bodyEntry.getValue();
+				container.setPositionI(body.getPosition());
+				container.setVelocityI(body.getLinearVelocity());
+			}
 		}
 		
 		@Override
@@ -416,28 +430,48 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		@Override
 		protected void onReadTransmissionData(DataInputStream pDataInputStream)
 				throws IOException {
-	
-			platformPos.x = pDataInputStream.readFloat();
-			platformPos.y = pDataInputStream.readFloat();
-			platformVelocity.x = pDataInputStream.readFloat();
-			platformVelocity.y = pDataInputStream.readFloat();
+			for (SyncContainer container : syncContainers) {
+				container.getPositionI().set(pDataInputStream.readFloat(), pDataInputStream.readFloat());
+				container.getVelocityI().set(pDataInputStream.readFloat(), pDataInputStream.readFloat());
+			}
 		}
 
 		@Override
 		protected void onWriteTransmissionData(
 				DataOutputStream pDataOutputStream) throws IOException {
-		
-			pDataOutputStream.writeFloat(platformPos.x);
-			pDataOutputStream.writeFloat(platformPos.y);
-			pDataOutputStream.writeFloat(platformVelocity.x);
-			pDataOutputStream.writeFloat(platformVelocity.y);
+			for (SyncContainer container : syncContainers) {
+				Vector2 position = container.getPositionI();
+				Vector2 velocity = container.getVelocityI();
+				pDataOutputStream.writeFloat(position.x);
+				pDataOutputStream.writeFloat(position.y);
+				pDataOutputStream.writeFloat(velocity.x);
+				pDataOutputStream.writeFloat(velocity.y);
+			}
 		}
 	}
 	
 	private static class SyncContainer{
-		public int iD;
-		public Vector2 positionI;
-		public Vector2 VelocityI;
+		private int id;
+		private Vector2 positionI = new Vector2();
+		private Vector2 VelocityI = new Vector2();
+		public int getId() {
+			return id;
+		}
+		public void setId(int id) {
+			this.id = id;
+		}
+		public Vector2 getPositionI() {
+			return positionI;
+		}
+		public void setPositionI(Vector2 positionI) {
+			this.positionI = positionI;
+		}
+		public Vector2 getVelocityI() {
+			return VelocityI;
+		}
+		public void setVelocityI(Vector2 velocityI) {
+			VelocityI = velocityI;
+		}
 		
 	}
 	
