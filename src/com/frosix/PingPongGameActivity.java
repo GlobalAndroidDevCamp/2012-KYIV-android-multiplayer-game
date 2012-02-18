@@ -308,7 +308,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 		if(pMessage instanceof SynchronizingMessage){
 			Log.i("flag", "message handled SynchronizingMessage ");
-			synchronizeGame((SynchronizingMessage)pMessage);
+			//synchronizeGame((SynchronizingMessage)pMessage);
 			
 		}
 		
