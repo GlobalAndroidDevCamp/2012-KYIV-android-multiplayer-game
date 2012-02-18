@@ -177,7 +177,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				
 //				sendMessage(new EmptyMessage());
 //				
-				SynchronizingMessage syncMessageToSend = new SynchronizingMessage();
+				SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
 				syncMessageToSend.set(selfRectBody.getPosition().x ,selfRectBody.getPosition().y, selfRectBody.getLinearVelocity().x , selfRectBody.getLinearVelocity().y );
 				sendMessage(syncMessageToSend);
 			
