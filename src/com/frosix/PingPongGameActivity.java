@@ -20,6 +20,7 @@ import org.anddev.andengine.entity.scene.Scene;
 import org.anddev.andengine.entity.scene.Scene.IOnSceneTouchListener;
 import org.anddev.andengine.entity.shape.Shape;
 import org.anddev.andengine.entity.sprite.AnimatedSprite;
+import org.anddev.andengine.extension.multiplayer.protocol.adt.message.EmptyMessage;
 import org.anddev.andengine.extension.multiplayer.protocol.adt.message.IMessage;
 import org.anddev.andengine.extension.multiplayer.protocol.adt.message.Message;
 import org.anddev.andengine.extension.multiplayer.protocol.shared.BluetoothSocketConnection;
@@ -168,14 +169,15 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			}
 		});
 		
-		mScene.registerUpdateHandler(new TimerHandler(0.5f,true, new ITimerCallback() {	
+		mScene.registerUpdateHandler(new TimerHandler(0.1f,true, new ITimerCallback() {	
 			
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
 	
 				
 //				sendMessage(new EmptyMessage());
-				SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
+//				
+				SynchronizingMessage syncMessageToSend = new SynchronizingMessage();
 				syncMessageToSend.set(selfRectBody.getPosition().x ,selfRectBody.getPosition().y, selfRectBody.getLinearVelocity().x , selfRectBody.getLinearVelocity().y );
 				sendMessage(syncMessageToSend);
 			
