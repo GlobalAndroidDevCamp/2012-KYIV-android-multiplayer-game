@@ -192,7 +192,7 @@ public abstract class BaseMultiplayerGameActivity extends BaseGameActivity
 
 	protected void sendMessage(ICommonMessage message) {
 		bluetoothDelegate.sendMessage(message);
-		mMessagePool.recycleMessage(message);
+		//mMessagePool.recycleMessage(message);
 	}
 
 	@Override

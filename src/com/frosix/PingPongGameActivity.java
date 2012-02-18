@@ -91,6 +91,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private Map<Short, Class<? extends ICommonMessage>> messageMap = new HashMap<Short, Class<? extends ICommonMessage>>() {{
 		put(FLAG_MESSAGE_TOUCH_CONTROL, TouchControlMessage.class);
 		put(FLAG_MESSAGE_SYNCHRONIZING , SynchronizingMessage.class);
+		put((short) 5 , EmptyMessage.class);
 	}};
 	
 	
@@ -171,11 +172,13 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
+	
 				
-				SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
-				syncMessageToSend.set(selfRectBody.getPosition().x ,selfRectBody.getPosition().y, selfRectBody.getLinearVelocity().x , selfRectBody.getLinearVelocity().y );
-				sendMessage(syncMessageToSend);
-				Log.i("flag" , "message sent");
+				sendMessage(new EmptyMessage());
+//				SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
+//				syncMessageToSend.set(selfRectBody.getPosition().x ,selfRectBody.getPosition().y, selfRectBody.getLinearVelocity().x , selfRectBody.getLinearVelocity().y );
+//				sendMessage(syncMessageToSend);
+//				Log.i("flag" , "message sent");
 				
 //				TouchControlMessage messageToSend = (TouchControlMessage)getMessage(FLAG_MESSAGE_TOUCH_CONTROL);
 //				messageToSend.set(117 , 711 , 747);
@@ -306,6 +309,11 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			synchronizeGame((SynchronizingMessage)pMessage);
 			
 		}
+		
+		if(pMessage instanceof EmptyMessage){
+			Log.i("flag","message handled EmptyMessage ");
+		}
+		
 		super.onHandleMessage(pConnector, pMessage);
 	}
 
@@ -421,6 +429,29 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 	}
 	
+	public static class EmptyMessage extends CommonMessage{
+
+		@Override
+		public short getFlag() {
+			
+			return 5;
+		}
+
+		@Override
+		protected void onReadTransmissionData(DataInputStream pDataInputStream)
+				throws IOException {
+			
+			
+		}
+
+		@Override
+		protected void onWriteTransmissionData(
+				DataOutputStream pDataOutputStream) throws IOException {
+			
+			
+		}
+		
+	}
 	
 	
 }
