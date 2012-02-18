@@ -311,8 +311,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			@Override
 			public void run() {
 				if ( enemyRectBody!= null){
-					enemyRectBody.setTransform(pMessage.platformPos  , 0);
-					enemyRectBody.setLinearVelocity(pMessage.platformVelocity);
+					enemyRectBody.setTransform(CAMERA_WIDTH /32 - pMessage.platformPos.x , 10/32  , 0);
+					enemyRectBody.setLinearVelocity(pMessage.platformVelocity.mul(-1));
 				}
 				
 			}
