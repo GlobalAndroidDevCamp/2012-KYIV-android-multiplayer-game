@@ -411,7 +411,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		}
 		
 		public void set(Map<Byte ,Body> bodies) {
-			syncContainers.clear();
+			//syncContainers.clear();
 			int i = 0;
 			for (Map.Entry<Byte, Body> bodyEntry : bodies.entrySet()) {
 				SyncContainer container = syncContainers.get(i++);
