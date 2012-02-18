@@ -80,13 +80,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	
 	Body globBbody;
 	
-	//Const 
-		private static final FixtureDef FIXTURE_WALL = PhysicsFactory.createFixtureDef(1, 1f, 0f);
-		private static final FixtureDef FIXTURE_PLATFORM = PhysicsFactory.createFixtureDef(0.5f, 0.5f, 0.5f);
-		private static final FixtureDef FIXTURE_BALL = PhysicsFactory.createFixtureDef(1, 1f, 1f);
-		//
-		
-		
+	private static final FixtureDef FIXTURE_WALL = PhysicsFactory.createFixtureDef(1, 1f, 0f);
+	private static final FixtureDef FIXTURE_PLATFORM = PhysicsFactory.createFixtureDef(0.5f, 0.5f, 0.5f);
+	private static final FixtureDef FIXTURE_BALL = PhysicsFactory.createFixtureDef(1, 1f, 1f);
 	
 	@SuppressWarnings("serial")
 	private Map<Short, Class<? extends ICommonMessage>> messageMap = new HashMap<Short, Class<? extends ICommonMessage>>() {{
@@ -94,8 +90,6 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		put(FLAG_MESSAGE_SYNCHRONIZING , SynchronizingMessage.class);
 		put((short) 5 , EmptyMessage.class);
 	}};
-	
-	
 	
 	@Override
 	public Engine onLoadEngine() {
@@ -173,20 +167,11 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
-	
-				
-//				sendMessage(new EmptyMessage());
-//				
 				SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
 				syncMessageToSend.set(selfRectBody.getPosition().x ,selfRectBody.getPosition().y, selfRectBody.getLinearVelocity().x , selfRectBody.getLinearVelocity().y );
-				sendMessage(syncMessageToSend);
-			
-				
-//				TouchControlMessage messageToSend = (TouchControlMessage)getMessage(FLAG_MESSAGE_TOUCH_CONTROL);
-//				messageToSend.set(117 , 711 , 747);
-//				sendMessage(messageToSend);
-				
+				sendMessage(syncMessageToSend);	
 			}
+			
 		}));
 	}
 	
