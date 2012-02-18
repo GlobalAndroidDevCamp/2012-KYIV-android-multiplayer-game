@@ -3,8 +3,10 @@ package com.frosix;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.anddev.andengine.engine.Engine;
@@ -80,6 +82,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	
 	Body globBbody;
 	
+	Map<Byte , Body> bodyToSync = new HashMap< Byte ,Body>();
+	
 	private static final FixtureDef FIXTURE_WALL = PhysicsFactory.createFixtureDef(1, 1f, 0f);
 	private static final FixtureDef FIXTURE_PLATFORM = PhysicsFactory.createFixtureDef(0.5f, 0.5f, 0.5f);
 	private static final FixtureDef FIXTURE_BALL = PhysicsFactory.createFixtureDef(1, 1f, 1f);
@@ -88,8 +92,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private Map<Short, Class<? extends ICommonMessage>> messageMap = new HashMap<Short, Class<? extends ICommonMessage>>() {{
 		put(FLAG_MESSAGE_TOUCH_CONTROL, TouchControlMessage.class);
 		put(FLAG_MESSAGE_SYNCHRONIZING , SynchronizingMessage.class);
-		put((short) 5 , EmptyMessage.class);
-	}};
+			}};
 	
 	@Override
 	public Engine onLoadEngine() {
@@ -163,7 +166,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			}
 		});
 		
-		mScene.registerUpdateHandler(new TimerHandler(0.1f,true, new ITimerCallback() {	
+		mScene.registerUpdateHandler(new TimerHandler(0.01f,true, new ITimerCallback() {	
 			
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
@@ -173,6 +176,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			}
 			
 		}));
+		
+		bodyToSync.put((byte) 1, addFace(1));
+	
 	}
 	
 	public void makeEffect(Body pBody , Vector2 pVector ){
@@ -199,10 +205,30 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		enemyRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, enemyRect, BodyType.KinematicBody, FIXTURE_PLATFORM);
 		this.mScene.attachChild(enemyRect);
 		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(enemyRect, enemyRectBody, true, true));
+		enemyRectBody.setUserData(2);
+		
+		bodyToSync.put( (byte) 2 , enemyRectBody);
 		enemyRectBody.setTransform(rectWidth /2 /32 , rectHeight /2 /32 , 0);
 			
 	}
-	
+    
+    private Body addFace( int count){
+		
+		final AnimatedSprite face = new AnimatedSprite(0, 0, this.mCircleFaceTextureRegion);
+		face.setScale(1.5f);
+		final Body body = PhysicsFactory.createCircleBody(this.mPhysicsWorld, face, BodyType.DynamicBody, FIXTURE_BALL);
+		
+
+		body.setTransform(240 /32 , 400/ 32, 0);
+		face.setUserData(count);
+				
+		this.mScene.attachChild(face);
+		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(face, body, true, true));
+		return body;
+		
+		
+	}
+    
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
 				
@@ -374,19 +400,12 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	
 	public static class SynchronizingMessage extends CommonMessage {
 
-	
-		Vector2 platformPos = new Vector2();
-		Vector2 platformVelocity = new Vector2();
+	    List<SyncContainer> syncContainers = new ArrayList<SyncContainer>();
 		
-	
 		public SynchronizingMessage () {}
 		
-		public void set(float platformPosX , float platformPosY , float platformVelocityX , float platformVelocityY ) {
-			platformPos.x =platformPosX;
-			platformPos.y =platformPosY;
+		public void set(Map<Byte ,Body> bodies) {
 			
-			platformVelocity.x = platformVelocityX;
-			platformVelocity.y = platformVelocityY;
 		}
 		
 		@Override
