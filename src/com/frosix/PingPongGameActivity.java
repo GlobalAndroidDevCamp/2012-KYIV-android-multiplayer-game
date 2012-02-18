@@ -65,7 +65,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private Body selfRectBody ;
 	
 	Rectangle enemyRect;
-	private Body enemyRectBody ;
+	private volatile Body enemyRectBody ;
 	
 	private boolean moveSelfFlag =false;
 	private boolean isSelfRight =false;
@@ -308,7 +308,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 		if(pMessage instanceof SynchronizingMessage){
 			Log.i("flag", "message handled SynchronizingMessage ");
-			//synchronizeGame((SynchronizingMessage)pMessage);
+			synchronizeGame((SynchronizingMessage)pMessage);
 			
 		}
 		
@@ -320,12 +320,18 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	}
 
 		
-	private void synchronizeGame(SynchronizingMessage pMessage) {
-		if ( enemyRectBody!= null){
-			enemyRectBody.setTransform(pMessage.platformPos  , 0);
-			enemyRectBody.setLinearVelocity(pMessage.platformVelocity);
-		}
-		
+	private void synchronizeGame(final SynchronizingMessage pMessage) {
+		this.runOnUpdateThread(new Runnable() {
+			
+			@Override
+			public void run() {
+				if ( enemyRectBody!= null){
+					enemyRectBody.setTransform(pMessage.platformPos  , 0);
+					enemyRectBody.setLinearVelocity(pMessage.platformVelocity);
+				}
+				
+			}
+		});
 	}
 
 	@Override
