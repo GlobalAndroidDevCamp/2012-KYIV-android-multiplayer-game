@@ -168,17 +168,17 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			}
 		});
 		
-		mScene.registerUpdateHandler(new TimerHandler(0.5f,true, new ITimerCallback() {	
+		mScene.registerUpdateHandler(new TimerHandler(0.1f,true, new ITimerCallback() {	
 			
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
 	
 				
-				sendMessage(new EmptyMessage());
-//				SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
-//				syncMessageToSend.set(selfRectBody.getPosition().x ,selfRectBody.getPosition().y, selfRectBody.getLinearVelocity().x , selfRectBody.getLinearVelocity().y );
-//				sendMessage(syncMessageToSend);
-//				Log.i("flag" , "message sent");
+//				sendMessage(new EmptyMessage());
+				SynchronizingMessage syncMessageToSend = new SynchronizingMessage();
+				syncMessageToSend.set(selfRectBody.getPosition().x ,selfRectBody.getPosition().y, selfRectBody.getLinearVelocity().x , selfRectBody.getLinearVelocity().y );
+				sendMessage(syncMessageToSend);
+				Log.i("flag" , "message sent");
 				
 //				TouchControlMessage messageToSend = (TouchControlMessage)getMessage(FLAG_MESSAGE_TOUCH_CONTROL);
 //				messageToSend.set(117 , 711 , 747);
