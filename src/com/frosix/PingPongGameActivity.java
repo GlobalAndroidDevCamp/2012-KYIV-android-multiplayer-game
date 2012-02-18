@@ -168,7 +168,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			}
 		});
 		
-		mScene.registerUpdateHandler(new TimerHandler(0.1f,true, new ITimerCallback() {	
+		mScene.registerUpdateHandler(new TimerHandler(0.5f,true, new ITimerCallback() {	
 			
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
@@ -320,8 +320,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 	private void synchronizeGame(SynchronizingMessage pMessage) {
 		if ( enemyRectBody!= null){
-			enemyRectBody.setTransform(new Vector2(CAMERA_WIDTH/32 - pMessage.platformPosX , 0) , 0);
-			enemyRectBody.setLinearVelocity(new Vector2(-pMessage.platformVelocityX, 0));
+			enemyRectBody.setTransform(pMessage.platformPos  , 0);
+			enemyRectBody.setLinearVelocity(pMessage.platformVelocity);
 		}
 		
 	}
@@ -382,18 +382,18 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	public static class SynchronizingMessage extends CommonMessage {
 
 	
-		float platformPosX ;
-		float platformPosY ;
-		float platformVelocityX;
-		float platformVelocityY;
+		Vector2 platformPos = new Vector2();
+		Vector2 platformVelocity = new Vector2();
 		
+	
 		public SynchronizingMessage () {}
 		
 		public void set(float platformPosX , float platformPosY , float platformVelocityX , float platformVelocityY ) {
-			this.platformPosX = platformPosX;
-			this.platformPosY = platformPosY;
-			this.platformVelocityX = platformVelocityX;
-			this.platformVelocityY = platformVelocityY;
+			platformPos.x =platformPosX;
+			platformPos.y =platformPosY;
+			
+			platformVelocity.x = platformVelocityX;
+			platformVelocity.y = platformVelocityY;
 		}
 		
 		@Override
@@ -405,20 +405,20 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		protected void onReadTransmissionData(DataInputStream pDataInputStream)
 				throws IOException {
 	
-			this.platformPosX = pDataInputStream.readFloat();
-			this.platformPosY = pDataInputStream.readFloat();
-			this.platformVelocityX = pDataInputStream.readFloat();
-			this.platformVelocityY = pDataInputStream.readFloat();
+			platformPos.x = pDataInputStream.readFloat();
+			platformPos.y = pDataInputStream.readFloat();
+			platformVelocity.x = pDataInputStream.readFloat();
+			platformVelocity.y = pDataInputStream.readFloat();
 		}
 
 		@Override
 		protected void onWriteTransmissionData(
 				DataOutputStream pDataOutputStream) throws IOException {
 		
-			pDataOutputStream.writeFloat(this.platformPosX);
-			pDataOutputStream.writeFloat(this.platformPosY);
-			pDataOutputStream.writeFloat(platformVelocityX);
-			pDataOutputStream.writeFloat(platformVelocityY);
+			pDataOutputStream.writeFloat(platformPos.x);
+			pDataOutputStream.writeFloat(platformPos.y);
+			pDataOutputStream.writeFloat(platformVelocity.x);
+			pDataOutputStream.writeFloat(platformVelocity.y);
 		}
 	}
 	
