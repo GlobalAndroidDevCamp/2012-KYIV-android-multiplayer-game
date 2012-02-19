@@ -21,8 +21,10 @@ import org.anddev.andengine.engine.options.resolutionpolicy.RatioResolutionPolic
 import org.anddev.andengine.entity.primitive.Rectangle;
 import org.anddev.andengine.entity.scene.Scene;
 import org.anddev.andengine.entity.scene.Scene.IOnSceneTouchListener;
+import org.anddev.andengine.entity.scene.background.SpriteBackground;
 import org.anddev.andengine.entity.shape.Shape;
 import org.anddev.andengine.entity.sprite.AnimatedSprite;
+import org.anddev.andengine.entity.sprite.Sprite;
 import org.anddev.andengine.extension.multiplayer.protocol.adt.message.EmptyMessage;
 import org.anddev.andengine.extension.multiplayer.protocol.adt.message.Message;
 import org.anddev.andengine.extension.multiplayer.protocol.client.connector.ServerConnector;
@@ -36,6 +38,7 @@ import org.anddev.andengine.input.touch.TouchEvent;
 import org.anddev.andengine.opengl.texture.TextureOptions;
 import org.anddev.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.anddev.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
+import org.anddev.andengine.opengl.texture.region.TextureRegion;
 import org.anddev.andengine.opengl.texture.region.TiledTextureRegion;
 
 import android.util.Log;
@@ -58,14 +61,14 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	
 	private Camera mCamera;
 	private BitmapTextureAtlas mBitmapTextureAtlas;
-	private TiledTextureRegion mCircleFaceTextureRegion;
+	private TextureRegion mCircleFaceTextureRegion;
 	private Scene mScene;
 	private PhysicsWorld mPhysicsWorld;
 		
-	Rectangle selfRect;
+	Sprite selfRect;
 	private Body selfRectBody ;
 	
-	Rectangle enemyRect;
+	Sprite enemyRect;
 	private volatile Body enemyRectBody;
 	
 	private boolean moveSelfFlag =false;
@@ -96,6 +99,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private Map<Short, Class<? extends ICommonMessage>> messageMap = new HashMap<Short, Class<? extends ICommonMessage>>() {{
 		put(FLAG_MESSAGE_SYNCHRONIZING , SynchronizingMessage.class);
 	}};
+	private TextureRegion mBackgroundTexture;
+	private TextureRegion mPlateSelfTexture;
+	private TextureRegion mPlateEnemyTexture;
 	
 	@Override
 	public Engine onLoadEngine() {
@@ -109,9 +115,13 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 
 	@Override
 	public void onLoadResources() {
-		this.mBitmapTextureAtlas = new BitmapTextureAtlas(64, 128, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+		this.mBitmapTextureAtlas = new BitmapTextureAtlas(1024, 1024, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
-		this.mCircleFaceTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "face_circle_tiled.png", 0, 32, 2, 1);
+		
+		this.mBackgroundTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, "Background.png" , 0 , 0);
+		this.mPlateSelfTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, "Plate1.png" , 480,0);
+		this.mPlateEnemyTexture = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, "Plate2.png" , 480,30);
+		this.mCircleFaceTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, "ballG.png", 480, 62);
 		this.mEngine.getTextureManager().loadTexture(this.mBitmapTextureAtlas);
 	}
 
@@ -142,6 +152,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		mScene.setTouchAreaBindingEnabled(true);
 		
 		mScene.setOnSceneTouchListener(this);	
+		mScene.setBackground(new SpriteBackground(new Sprite(0, 0, mBackgroundTexture)));
 		return mScene;
 	}
 	
@@ -216,14 +227,14 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		float rectWidth = 120;
 		float rectHeight = 20;
 		
-		selfRect = new Rectangle(0, 0 , rectWidth, rectHeight);
+		selfRect = new Sprite(0, 0, mPlateSelfTexture);
 		selfRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, selfRect, BodyType.KinematicBody, FIXTURE_PLATFORM);
 						
 		this.mScene.attachChild(selfRect);
 		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(selfRect, selfRectBody, true, true ));
 		selfRectBody.setTransform(rectWidth/2 / 32, (CAMERA_HEIGHT - rectHeight /2 ) /32, 0);
 		
-		enemyRect = new Rectangle(0 , 0 , rectWidth, rectHeight);
+		enemyRect = new Sprite(0, 0, mPlateEnemyTexture);
 		enemyRectBody = PhysicsFactory.createBoxBody(this.mPhysicsWorld, enemyRect, BodyType.KinematicBody, FIXTURE_PLATFORM);
 		this.mScene.attachChild(enemyRect);
 		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(enemyRect, enemyRectBody, true, true));
@@ -236,7 +247,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
     
     private Body addFace( int count){
 		
-		final AnimatedSprite face = new AnimatedSprite(0, 0, this.mCircleFaceTextureRegion);
+		final Sprite face = new Sprite(0, 0, this.mCircleFaceTextureRegion);
 		face.setScale(1.5f);
 		final Body body = PhysicsFactory.createCircleBody(this.mPhysicsWorld, face, BodyType.DynamicBody, FIXTURE_BALL);
 		
