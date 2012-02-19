@@ -408,7 +408,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	    List<SyncContainer> syncContainers = new ArrayList<SyncContainer>();
 		
 		public SynchronizingMessage () {
-			for (int i = 0; i < 2; i ++) {
+			for (int i = 0; i < selfBodyCount; i ++) {
 				syncContainers.add(new SyncContainer());
 			}
 		}
