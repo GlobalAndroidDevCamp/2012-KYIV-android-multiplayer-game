@@ -83,10 +83,13 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	Body globBbody;
 	
 	Map<Byte , Body> bodyToSync = new HashMap< Byte ,Body>();
+	private Body ball;
 	
 	private static final FixtureDef FIXTURE_WALL = PhysicsFactory.createFixtureDef(1, 1f, 0f);
 	private static final FixtureDef FIXTURE_PLATFORM = PhysicsFactory.createFixtureDef(0.5f, 0.5f, 0.5f);
 	private static final FixtureDef FIXTURE_BALL = PhysicsFactory.createFixtureDef(1, 1f, 1f);
+	private static final byte selfBodyCount = 1;
+	private static final byte commonBodyCount = 1;
 	
 	@SuppressWarnings("serial")
 	private Map<Short, Class<? extends ICommonMessage>> messageMap = new HashMap<Short, Class<? extends ICommonMessage>>() {{
@@ -177,8 +180,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			
 		}));
 		
-		bodyToSync.put((byte) 1, addFace(1));
-	
+		//bodyToSync.put((byte) 1, addFace(1));
+		ball = addFace(1);
 	}
 	
 	public void makeEffect(Body pBody , Vector2 pVector ){
@@ -207,7 +210,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(enemyRect, enemyRectBody, true, true));
 		enemyRectBody.setUserData(2);
 		
-		bodyToSync.put( (byte) 2 , enemyRectBody);
+		bodyToSync.put((byte)0 , selfRectBody);
 		enemyRectBody.setTransform(rectWidth /2 /32 , rectHeight /2 /32 , 0);
 			
 	}
@@ -337,7 +340,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			@Override
 			public void run() {
 				for (SyncContainer container : pMessage.syncContainers) {
-					Body b = bodyToSync.get(container.getId());
+					Body b = bodyToSync.get(2*selfBodyCount + commonBodyCount - container.getId() - 1);
 					Vector2 position = container.getPositionI();
 					b.setTransform(CAMERA_WIDTH/32 - position.x, CAMERA_HEIGHT/32 - position.y, 0);
 					b.setLinearVelocity(container.getVelocityI().mul(-1));
