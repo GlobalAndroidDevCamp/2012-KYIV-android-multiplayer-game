@@ -37,6 +37,7 @@ import org.anddev.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextur
 import org.anddev.andengine.opengl.texture.region.TiledTextureRegion;
 
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.Display;
 
 import com.badlogic.gdx.math.Vector2;
@@ -86,9 +87,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	
 	Body globBbody;
 	
-	private Map<Byte, Body> selfBodies = new HashMap<Byte, Body>();
-	private Map<Byte, Body> commonBodies = new HashMap<Byte, Body>();
-	private Map<Byte, Body> enemyBodies = new HashMap<Byte, Body>();
+	private Body[] selfBodies = new Body[selfBodyCount];
+	private Body[] commonBodies = new Body[commonBodyCount];
+	private Body[] enemyBodies = new Body[selfBodyCount];
 	
 	private static final FixtureDef FIXTURE_WALL = PhysicsFactory.createFixtureDef(1, 1f, 0f);
 	private static final FixtureDef FIXTURE_PLATFORM = PhysicsFactory.createFixtureDef(0.5f, 0.5f, 0.5f);
@@ -182,9 +183,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			}
 			
 		}));
-		
-		//bodyToSync.put((byte) 1, addFace(1));
-		commonBodies.put((byte)0, addFace(1));
+		commonBodies[0] = addFace(1);
 	}
 	
 	public void makeEffect(Body pBody , Vector2 pVector ){
@@ -213,9 +212,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(enemyRect, enemyRectBody, true, true));
 		enemyRectBody.setUserData(2);
 		
-		selfBodies.put((byte)0 , selfRectBody);
+		selfBodies[0] = selfRectBody;
 		enemyRectBody.setTransform(rectWidth /2 /32 , rectHeight /2 /32 , 0);
-		enemyBodies.put((byte)0, enemyRectBody);	
+		enemyBodies[0] = enemyRectBody;	
 	}
     
     private Body addFace( int count){
@@ -343,11 +342,12 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			
 			@Override
 			public void run() {
-				for (SyncContainer container : pMessage.syncContainers) {
-					Body b = enemyBodies.get(container.getId());
-					Vector2 position = container.getPositionI();
+				for (int i = 0; i < pMessage.syncContainers.length; i++) {
+					Body b = enemyBodies[i];
+					SyncContainer container = pMessage.syncContainers[i];
+					Vector2 position = container.positionI;
 					b.setTransform(WORLD_WIDTH/ - position.x, WORLD_HEIGHT/32 - position.y, 0);
-					b.setLinearVelocity(container.getVelocityI().mul(-1));
+					b.setLinearVelocity(container.velocityI.mul(-1));
 				}
 			}
 			
@@ -409,22 +409,20 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	
 	public static class SynchronizingMessage extends CommonMessage {
 
-	    List<SyncContainer> syncContainers = new ArrayList<SyncContainer>();
+	    public SyncContainer[] syncContainers = new SyncContainer[selfBodyCount];
 		
 		public SynchronizingMessage () {
-			for (int i = 0; i < selfBodyCount; i ++) {
-				syncContainers.add(new SyncContainer());
+			for (byte i = 0; i < selfBodyCount; i ++) {
+				syncContainers[i] = new SyncContainer();
 			}
 		}
 		
-		public void set(Map<Byte ,Body> bodies) {
-			int i = 0;
-			for (Map.Entry<Byte, Body> bodyEntry : bodies.entrySet()) {
-				SyncContainer container = syncContainers.get(i++);
-				container.setId(bodyEntry.getKey());
-				Body body = bodyEntry.getValue();
-				container.setPositionI(body.getPosition());
-				container.setVelocityI(body.getLinearVelocity());
+		public void set(Body[] bodies) {
+			for (byte i = 0; i < bodies.length; i++) {
+				SyncContainer container = syncContainers[i++];
+				Body body = bodies[i];
+				container.positionI = body.getPosition();
+				container.velocityI = body.getLinearVelocity();
 			}
 		}
 		
@@ -436,20 +434,20 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		@Override
 		protected void onReadTransmissionData(DataInputStream pDataInputStream)
 				throws IOException {
-			for (SyncContainer container : syncContainers) {
-				container.setId(pDataInputStream.readByte());
-				container.getPositionI().set(pDataInputStream.readFloat(), pDataInputStream.readFloat());
-				container.getVelocityI().set(pDataInputStream.readFloat(), pDataInputStream.readFloat());
+			for (int i = 0; i < syncContainers.length; i++) {
+				SyncContainer container = syncContainers[i];
+				container.positionI.set(pDataInputStream.readFloat(), pDataInputStream.readFloat());
+				container.velocityI.set(pDataInputStream.readFloat(), pDataInputStream.readFloat());
 			}
 		}
 
 		@Override
 		protected void onWriteTransmissionData(
 				DataOutputStream pDataOutputStream) throws IOException {
-			for (SyncContainer container : syncContainers) {
-				pDataOutputStream.writeByte(container.getId());
-				Vector2 position = container.getPositionI();
-				Vector2 velocity = container.getVelocityI();
+			for (int i = 0; i < syncContainers.length; i++) {
+				SyncContainer container = syncContainers[i];
+				Vector2 position = container.positionI;
+				Vector2 velocity = container.velocityI;
 				pDataOutputStream.writeFloat(position.x);
 				pDataOutputStream.writeFloat(position.y);
 				pDataOutputStream.writeFloat(velocity.x);
@@ -459,28 +457,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	}
 	
 	private static class SyncContainer{
-		private byte id;
-		private Vector2 positionI = new Vector2();
-		private Vector2 VelocityI = new Vector2();
-		public byte getId() {
-			return id;
-		}
-		public void setId(byte id) {
-			this.id = id;
-		}
-		public Vector2 getPositionI() {
-			return positionI;
-		}
-		public void setPositionI(Vector2 positionI) {
-			this.positionI = positionI;
-		}
-		public Vector2 getVelocityI() {
-			return VelocityI;
-		}
-		public void setVelocityI(Vector2 velocityI) {
-			VelocityI = velocityI;
-		}
-		
+		public Vector2 positionI = new Vector2();
+		public Vector2 velocityI = new Vector2();
 	}
 	
 }
