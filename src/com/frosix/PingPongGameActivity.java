@@ -87,6 +87,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private static final byte selfBodyCount = 1;
 	private static final byte commonBodyCount = 1;
 	private ExecutorService pool;
+	private boolean connectionEstablished = false;
+	private boolean sceneLoaded = false;
+	private boolean startGameMessageReceived = false;
 	
 	@SuppressWarnings("serial")
 	private Map<Short, Class<? extends ICommonMessage>> messageMap = new HashMap<Short, Class<? extends ICommonMessage>>() {{
@@ -177,6 +180,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			
 		}));
 		commonBodies[0] = addFace(1);
+		sceneLoaded = true;
+		sendStartGameMessageIfPossible();
+		startGameIfPossible();
 	}
 	
 	public void makeEffect(Body pBody , Vector2 pVector ){
@@ -320,6 +326,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 		if(pMessage instanceof StartGameMessage){
 			Log.i("flag","message handled StartGameMessage ");
+			startGameMessageReceived = true;
+			startGameIfPossible();
 		}
 		
 		super.onHandleMessage(pConnector, pMessage);
@@ -353,9 +361,16 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	@Override
 	public void onStarted(Connector<?> pConnector) {
 		super.onStarted(pConnector);
-		if (commonBodies[0] != null) {
-			makeEffect(commonBodies[0], new Vector2(0, 15));
-		}
+		connectionEstablished = true;
+		sendStartGameMessageIfPossible();
+	}
+	
+	private void sendStartGameMessageIfPossible() {
+		sendMessage((StartGameMessage)getMessage((byte)0));
+	}
+	
+	private void startGameIfPossible() {
+		makeEffect(commonBodies[0], new Vector2(0, 15));
 	}
 
 	public static class MovePlatformCommonMessage extends Message implements ICommonMessage {
