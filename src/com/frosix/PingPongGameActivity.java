@@ -88,7 +88,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private static final FixtureDef FIXTURE_BALL = PhysicsFactory.createFixtureDef(1, 1f, 1f);
 	private static final byte selfBodyCount = 1;
 	private static final byte commonBodyCount = 1;
-	private ScheduledExecutorService pool;
+	private ExecutorService pool;
 	private boolean connectionEstablished = false;
 	private boolean sceneLoaded = false;
 	private boolean startGameMessageReceived = false;
@@ -147,6 +147,10 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		mScene.setOnSceneTouchListener(this);	
 		return mScene;
 	}
+	
+	private boolean isClient() {
+		return bluetoothDelegate instanceof ClientBluetoothDelegate;
+	}
 
 	
 	@Override
@@ -165,7 +169,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				//moveEnemyPlatform(moveEnemyFlag , isEnemyRight);
 			}
 		});
-		pool = Executors.newSingleThreadScheduledExecutor();
+		pool = Executors.newSingleThreadExecutor();
 		mScene.registerUpdateHandler(new TimerHandler(0.04f, true, new ITimerCallback() {	
 			
 			@Override
@@ -183,7 +187,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		}));
 		commonBodies[0] = addFace(1);
 		sceneLoaded = true;
-		sendStartGameMessageIfPossible();
+		if (isClient()) {
+			sendStartGameMessageIfPossible();
+		}
 		startGameIfPossible();
 		Log.i("flag","onLoadComplete");
 	}
@@ -329,7 +335,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 		if(pMessage instanceof StartGameMessage){
 			Log.i("flag","message handled StartGameMessage ");
-			startGameMessageReceived = true;
+			//startGameMessageReceived = true;
 			startGameIfPossible();
 		}
 		
@@ -365,25 +371,33 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	public void onStarted(Connector<?> pConnector) {
 		super.onStarted(pConnector);
 		connectionEstablished = true;
-		sendStartGameMessageIfPossible();
+		if (isClient()) {
+			sendStartGameMessageIfPossible();
+		}
 	}
 	
 	private void sendStartGameMessageIfPossible() {
 		if (connectionEstablished && sceneLoaded) {
-			pool.schedule(new Runnable() {
+			pool.execute(new Runnable() {
 				@Override
 				public void run() {
 					
 					sendMessage((StartGameMessage)getMessage(FLAG_MESSAGE_START));
 				}
-			}, 5,  TimeUnit.SECONDS);
+			});
 			
 		}
 	}
 	
 	private void startGameIfPossible() {
-		if (sceneLoaded && startGameMessageReceived) {
-			makeEffect(commonBodies[0], new Vector2(0, 15));
+		if (isClient()) {
+			if (sceneLoaded) {
+				makeEffect(commonBodies[0], new Vector2(0, 15));
+			}
+		} else {
+			if (sceneLoaded && startGameMessageReceived) {
+				makeEffect(commonBodies[0], new Vector2(0, 15));
+			}
 		}
 	}
 
