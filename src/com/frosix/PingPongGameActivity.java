@@ -89,15 +89,11 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private static final byte selfBodyCount = 1;
 	private static final byte commonBodyCount = 1;
 	private ScheduledExecutorService pool;
-	private boolean connectionEstablished = false;
-	private boolean sceneLoaded = false;
-	private boolean startGameMessageReceived = false;
 	
 	@SuppressWarnings("serial")
 	private Map<Short, Class<? extends ICommonMessage>> messageMap = new HashMap<Short, Class<? extends ICommonMessage>>() {{
 		put(FLAG_MESSAGE_TOUCH_CONTROL, TouchControlMessage.class);
 		put(FLAG_MESSAGE_SYNCHRONIZING , SynchronizingMessage.class);
-		put(FLAG_MESSAGE_START ,StartGameMessage.class);
 	}};
 	
 	@Override
@@ -186,24 +182,6 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			
 		}));
 		commonBodies[0] = addFace(1);
-		sceneLoaded = true;
-		if (isClient()) {
-			pool.schedule(new Runnable() {
-				@Override
-				public void run() {
-					sendStartGameMessageIfPossible();
-					PingPongGameActivity.this.runOnUpdateThread(new Runnable() {
-						@Override
-						public void run() {
-							startGameIfPossible();
-						}
-					});
-				}
-			}, 500, TimeUnit.MILLISECONDS);
-		} else {
-			startGameIfPossible();
-		}
-		Log.i("flag","onLoadComplete");
 	}
 	
 	public void makeEffect(Body pBody , Vector2 pVector ){
@@ -345,12 +323,6 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			synchronizeGame((SynchronizingMessage)pMessage);
 		}
 		
-		if(pMessage instanceof StartGameMessage){
-			Log.i("flag","message handled StartGameMessage ");
-			startGameMessageReceived = true;
-			startGameIfPossible();
-		}
-		
 		super.onHandleMessage(pConnector, pMessage);
 	}
 
@@ -382,46 +354,11 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	@Override
 	public void onStarted(Connector<?> pConnector) {
 		super.onStarted(pConnector);
-		connectionEstablished = true;
-		if (isClient()) {
-			pool.schedule(new Runnable() {
-				@Override
-				public void run() {
-					sendStartGameMessageIfPossible();
-					PingPongGameActivity.this.runOnUpdateThread(new Runnable() {
-						@Override
-						public void run() {
-							startGameIfPossible();
-						}
-					});
-				}
-			}, 500, TimeUnit.MILLISECONDS);
-		}
-	}
-	
-	private void sendStartGameMessageIfPossible() {
-		if (connectionEstablished && sceneLoaded) {
-			pool.execute(new Runnable() {
-				@Override
-				public void run() {
-					
-					sendMessage((StartGameMessage)getMessage(FLAG_MESSAGE_START));
-				}
-			});
-			
-		}
+		
 	}
 	
 	private void startGameIfPossible() {
-		if (isClient()) {
-			if (sceneLoaded) {
-				makeEffect(commonBodies[0], new Vector2(0, 15));
-			}
-		} else {
-			if (sceneLoaded && startGameMessageReceived) {
-				makeEffect(commonBodies[0], new Vector2(0, 15));
-			}
-		}
+		makeEffect(commonBodies[0], new Vector2(0, 15));
 	}
 
 	public static class MovePlatformCommonMessage extends Message implements ICommonMessage {
@@ -525,29 +462,6 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private static class SyncContainer{
 		public Vector2 positionI = new Vector2();
 		public Vector2 velocityI = new Vector2();
-	}
-	
-	public static class StartGameMessage extends CommonMessage {
-
-		@Override
-		public short getFlag() {
-			return FLAG_MESSAGE_START;
-		}
-
-		@Override
-		protected void onReadTransmissionData(DataInputStream pDataInputStream)
-				throws IOException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		protected void onWriteTransmissionData(
-				DataOutputStream pDataOutputStream) throws IOException {
-			// TODO Auto-generated method stub
-			
-		}
-		
 	}
 	
 }
