@@ -380,11 +380,14 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	@Override
 	public void onStarted(Connector<?> pConnector) {
 		super.onStarted(pConnector);
-		
-	}
-	
-	private void startGameIfPossible() {
-		makeEffect(commonBodies[0], new Vector2(0, 15));
+		if (!isClient()) {
+			mScene.registerUpdateHandler(new TimerHandler(2, false, new ITimerCallback() {
+				@Override
+				public void onTimePassed(TimerHandler pTimerHandler) {
+					makeEffect(commonBodies[0], new Vector2(0, 15));
+				}
+			}));
+		}
 	}
 
 	public static class MovePlatformCommonMessage extends Message implements ICommonMessage {
