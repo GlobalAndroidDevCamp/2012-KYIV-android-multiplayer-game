@@ -435,17 +435,17 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				throws IOException {
 			for (SyncContainer container : syncContainers) {
 				byte id = pDataInputStream.readByte();
-				Log.d("output", String.valueOf(id));
+				Log.d("input", String.valueOf(id));
 				container.setId(id);
 				float x = pDataInputStream.readFloat();
-				Log.d("output", String.valueOf(x));
+				Log.d("input", String.valueOf(x));
 				float y = pDataInputStream.readFloat();
-				Log.d("output", String.valueOf(y));
+				Log.d("input", String.valueOf(y));
 				container.getPositionI().set(x, y);
 				x = pDataInputStream.readFloat();
-				Log.d("output", String.valueOf(x));
+				Log.d("input", String.valueOf(x));
 				y = pDataInputStream.readFloat();
-				Log.d("output", String.valueOf(y));
+				Log.d("input", String.valueOf(y));
 				container.getVelocityI().set(x, y);
 			}
 		}
