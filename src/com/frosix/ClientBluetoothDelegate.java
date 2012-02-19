@@ -54,6 +54,11 @@ public class ClientBluetoothDelegate extends AbstractBluetoothDelegate<ServerCon
 
 	@Override
 	public void init() {
+		try {
+			bluetoothEndpoint.getConnection().getBluetoothSocket().connect();
+		} catch (IOException e) {
+			Debug.e(e);
+		}
 		bluetoothEndpoint.start();
 	}
 

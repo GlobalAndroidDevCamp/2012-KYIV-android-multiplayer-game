@@ -183,6 +183,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		sceneLoaded = true;
 		sendStartGameMessageIfPossible();
 		startGameIfPossible();
+		Log.i("flag","onLoadComplete");
 	}
 	
 	public void makeEffect(Body pBody , Vector2 pVector ){
