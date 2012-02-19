@@ -88,7 +88,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private static final FixtureDef FIXTURE_BALL = PhysicsFactory.createFixtureDef(1, 1f, 1f);
 	private static final byte selfBodyCount = 1;
 	private static final byte commonBodyCount = 1;
-	private ScheduledExecutorService pool;
+	private ExecutorService pool;
 	
 	@SuppressWarnings("serial")
 	private Map<Short, Class<? extends ICommonMessage>> messageMap = new HashMap<Short, Class<? extends ICommonMessage>>() {{
@@ -165,7 +165,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				//moveEnemyPlatform(moveEnemyFlag , isEnemyRight);
 			}
 		});
-		pool = Executors.newSingleThreadScheduledExecutor();
+		pool = Executors.newSingleThreadExecutor();
 		mScene.registerUpdateHandler(new TimerHandler(0.04f, true, new ITimerCallback() {	
 			
 			@Override
