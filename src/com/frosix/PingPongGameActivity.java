@@ -172,6 +172,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			public void onTimePassed(TimerHandler pTimerHandler) {
 				final SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
 				syncMessageToSend.set(selfBodies);
+				syncMessageToSend.bodies = 0;
 				pool.execute(new Runnable() {
 					@Override
 					public void run() {
@@ -333,8 +334,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			
 			@Override
 			public void run() {
+				Body[] source = pMessage.bodies == 0 ? enemyBodies : commonBodies;
 				for (int i = 0; i < pMessage.syncContainers.length; i++) {
-					Body b = enemyBodies[i];
+					Body b = source[i];
 					SyncContainer container = pMessage.syncContainers[i];
 					Vector2 position = container.positionI;
 					
@@ -411,6 +413,8 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	public static class SynchronizingMessage extends CommonMessage {
 
 	    public SyncContainer[] syncContainers = new SyncContainer[selfBodyCount];
+	    //0-self, 1-common
+	    public byte bodies;
 		
 		public SynchronizingMessage () {
 			for (byte i = 0; i < selfBodyCount; i ++) {
@@ -437,6 +441,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		@Override
 		protected void onReadTransmissionData(DataInputStream pDataInputStream)
 				throws IOException {
+			bodies = pDataInputStream.readByte();
 			for (int i = 0; i < syncContainers.length; i++) {
 				SyncContainer container = syncContainers[i];
 				container.positionI.set(pDataInputStream.readFloat(), pDataInputStream.readFloat());
@@ -447,6 +452,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		@Override
 		protected void onWriteTransmissionData(
 				DataOutputStream pDataOutputStream) throws IOException {
+			pDataOutputStream.writeByte(bodies);
 			for (int i = 0; i < syncContainers.length; i++) {
 				SyncContainer container = syncContainers[i];
 				Vector2 position = container.positionI;
