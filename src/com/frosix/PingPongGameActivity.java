@@ -55,8 +55,8 @@ import com.frosix.protocol.adt.message.TouchControlMessage;
 import static java.lang.Math.*;
 public class PingPongGameActivity extends BaseMultiplayerGameActivity implements IOnSceneTouchListener {
 	
-	private static int CAMERA_HEIGHT;
-	private static float CAMERA_WIDTH ;
+	private static final float CAMERA_HEIGHT = 800;
+	private static final float CAMERA_WIDTH = 480;
 	private Camera mCamera;
 	private BitmapTextureAtlas mBitmapTextureAtlas;
 	private TiledTextureRegion mCircleFaceTextureRegion;
@@ -100,9 +100,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	
 	@Override
 	public Engine onLoadEngine() {
-		Display display = getWindowManager().getDefaultDisplay(); 
-		  CAMERA_WIDTH  = display.getWidth();
-		  CAMERA_HEIGHT = display.getHeight();
+		Display display = getWindowManager().getDefaultDisplay();
 		  this.mCamera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
 		  final EngineOptions engineOptions = new EngineOptions(true,
 					ScreenOrientation.PORTRAIT, new RatioResolutionPolicy(
@@ -170,7 +168,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			}
 		});
 		
-		mScene.registerUpdateHandler(new TimerHandler(5f,true, new ITimerCallback() {	
+		mScene.registerUpdateHandler(new TimerHandler(0.05f, true, new ITimerCallback() {	
 			
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
@@ -434,19 +432,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		protected void onReadTransmissionData(DataInputStream pDataInputStream)
 				throws IOException {
 			for (SyncContainer container : syncContainers) {
-				byte id = pDataInputStream.readByte();
-				Log.d("input", String.valueOf(id));
-				container.setId(id);
-				float x = pDataInputStream.readFloat();
-				Log.d("input", String.valueOf(x));
-				float y = pDataInputStream.readFloat();
-				Log.d("input", String.valueOf(y));
-				container.getPositionI().set(x, y);
-				x = pDataInputStream.readFloat();
-				Log.d("input", String.valueOf(x));
-				y = pDataInputStream.readFloat();
-				Log.d("input", String.valueOf(y));
-				container.getVelocityI().set(x, y);
+				container.setId(pDataInputStream.readByte());
+				container.getPositionI().set(pDataInputStream.readFloat(), pDataInputStream.readFloat());
+				container.getVelocityI().set(pDataInputStream.readFloat(), pDataInputStream.readFloat());
 			}
 		}
 
@@ -455,17 +443,12 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				DataOutputStream pDataOutputStream) throws IOException {
 			for (SyncContainer container : syncContainers) {
 				pDataOutputStream.writeByte(container.getId());
-				Log.d("output", String.valueOf(container.getId()));
 				Vector2 position = container.getPositionI();
 				Vector2 velocity = container.getVelocityI();
 				pDataOutputStream.writeFloat(position.x);
-				Log.d("output", String.valueOf(position.x));
 				pDataOutputStream.writeFloat(position.y);
-				Log.d("output", String.valueOf(position.x));
 				pDataOutputStream.writeFloat(velocity.x);
-				Log.d("output", String.valueOf(position.x));
 				pDataOutputStream.writeFloat(velocity.y);
-				Log.d("output", String.valueOf(position.x));
 			}
 		}
 	}
