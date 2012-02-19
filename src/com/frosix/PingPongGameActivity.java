@@ -92,6 +92,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private Map<Short, Class<? extends ICommonMessage>> messageMap = new HashMap<Short, Class<? extends ICommonMessage>>() {{
 		put(FLAG_MESSAGE_TOUCH_CONTROL, TouchControlMessage.class);
 		put(FLAG_MESSAGE_SYNCHRONIZING , SynchronizingMessage.class);
+		put((short) 0 ,StartGameMessage.class);
 	}};
 	
 	@Override
@@ -316,8 +317,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		if(pMessage instanceof SynchronizingMessage){
 			synchronizeGame((SynchronizingMessage)pMessage);
 		}
-		if(pMessage instanceof EmptyMessage){
-			Log.i("flag","message handled EmptyMessage ");
+		
+		if(pMessage instanceof StartGameMessage){
+			Log.i("flag","message handled StartGameMessage ");
 		}
 		
 		super.onHandleMessage(pConnector, pMessage);
@@ -334,6 +336,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 					Body b = enemyBodies[i];
 					SyncContainer container = pMessage.syncContainers[i];
 					Vector2 position = container.positionI;
+					
 					b.setTransform(WORLD_WIDTH - position.x, WORLD_HEIGHT - position.y, 0);
 					b.setLinearVelocity(container.velocityI.mul(-1));
 				}
@@ -456,6 +459,29 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private static class SyncContainer{
 		public Vector2 positionI = new Vector2();
 		public Vector2 velocityI = new Vector2();
+	}
+	
+	private class StartGameMessage extends CommonMessage{
+
+		@Override
+		public short getFlag() {
+			return 0;
+		}
+
+		@Override
+		protected void onReadTransmissionData(DataInputStream pDataInputStream)
+				throws IOException {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		protected void onWriteTransmissionData(
+				DataOutputStream pDataOutputStream) throws IOException {
+			// TODO Auto-generated method stub
+			
+		}
+		
 	}
 	
 }
