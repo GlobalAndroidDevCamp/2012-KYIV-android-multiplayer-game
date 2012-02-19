@@ -476,7 +476,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		public Vector2 velocityI = new Vector2();
 	}
 	
-	private class StartGameMessage extends CommonMessage{
+	private static class StartGameMessage extends CommonMessage{
 
 		@Override
 		public short getFlag() {
