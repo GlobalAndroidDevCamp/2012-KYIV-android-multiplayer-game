@@ -160,7 +160,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			}
 		});
 		pool = Executors.newSingleThreadExecutor();
-		mScene.registerUpdateHandler(new TimerHandler(0.01f, true, new ITimerCallback() {	
+		mScene.registerUpdateHandler(new TimerHandler(0.04f, true, new ITimerCallback() {	
 			
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
@@ -221,13 +221,6 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				
 		this.mScene.attachChild(face);
 		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(face, body, true, true));
-		mScene.registerUpdateHandler(new TimerHandler(3, new ITimerCallback() {
-			
-			@Override
-			public void onTimePassed(TimerHandler pTimerHandler) {
-				makeEffect(body, new Vector2(0, 15));
-			}
-		}));
 		return body;
 		
 		
@@ -354,7 +347,14 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		return messageMap;
 	}
 	
-	
+	@Override
+	public void onStarted(Connector<?> pConnector) {
+		super.onStarted(pConnector);
+		if (commonBodies[0] != null) {
+			makeEffect(commonBodies[0], new Vector2(0, 15));
+		}
+	}
+
 	public static class MovePlatformCommonMessage extends Message implements ICommonMessage {
 		public int mID;
 		public boolean moveFlag;

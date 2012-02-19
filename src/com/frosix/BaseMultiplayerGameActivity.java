@@ -198,6 +198,7 @@ public abstract class BaseMultiplayerGameActivity extends BaseGameActivity
 	@Override
 	public void onStarted(Connector<?> pConnector) {
 		toast("Connected");
+		
 	}
 
 	@Override
