@@ -368,7 +368,12 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	
 	private void sendStartGameMessageIfPossible() {
 		if (connectionEstablished && sceneLoaded) {
-			sendMessage((StartGameMessage)getMessage((byte)0));
+			pool.execute(new Runnable() {
+				@Override
+				public void run() {
+					sendMessage((StartGameMessage)getMessage((byte)0));
+				}
+			});
 		}
 	}
 	
