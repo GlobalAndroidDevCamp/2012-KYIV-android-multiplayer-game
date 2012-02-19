@@ -67,7 +67,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private Body selfRectBody ;
 	
 	Rectangle enemyRect;
-	private volatile Body enemyRectBody ;
+	private volatile Body enemyRectBody;
 	
 	private boolean moveSelfFlag =false;
 	private boolean isSelfRight =false;
@@ -82,8 +82,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	
 	Body globBbody;
 	
-	Map<Byte, Body> bodyToSync = new HashMap<Byte ,Body>();
-	private Body ball;
+	private Map<Byte, Body> selfBodies = new HashMap<Byte, Body>();
+	private Map<Byte, Body> commonBodies = new HashMap<Byte, Body>();
+	private Map<Byte, Body> enemyBodies = new HashMap<Byte, Body>();
 	
 	private static final FixtureDef FIXTURE_WALL = PhysicsFactory.createFixtureDef(1, 1f, 0f);
 	private static final FixtureDef FIXTURE_PLATFORM = PhysicsFactory.createFixtureDef(0.5f, 0.5f, 0.5f);
@@ -174,14 +175,14 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
 				SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
-				syncMessageToSend.set(bodyToSync);
+				syncMessageToSend.set(selfBodies);
 				sendMessage(syncMessageToSend);	
 			}
 			
 		}));
 		
 		//bodyToSync.put((byte) 1, addFace(1));
-		ball = addFace(1);
+		commonBodies.put((byte)0, addFace(1));
 	}
 	
 	public void makeEffect(Body pBody , Vector2 pVector ){
@@ -210,9 +211,9 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(enemyRect, enemyRectBody, true, true));
 		enemyRectBody.setUserData(2);
 		
-		bodyToSync.put((byte)0 , selfRectBody);
+		selfBodies.put((byte)0 , selfRectBody);
 		enemyRectBody.setTransform(rectWidth /2 /32 , rectHeight /2 /32 , 0);
-			
+		enemyBodies.put((byte)0, enemyRectBody);	
 	}
     
     private Body addFace( int count){
@@ -340,7 +341,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			@Override
 			public void run() {
 				for (SyncContainer container : pMessage.syncContainers) {
-					Body b = bodyToSync.get(2*selfBodyCount + commonBodyCount - container.getId() - 1);
+					Body b = enemyBodies.get(container.getId());
 					Vector2 position = container.getPositionI();
 					b.setTransform(CAMERA_WIDTH/32 - position.x, CAMERA_HEIGHT/32 - position.y, 0);
 					b.setLinearVelocity(container.getVelocityI().mul(-1));
@@ -414,7 +415,6 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		}
 		
 		public void set(Map<Byte ,Body> bodies) {
-			//syncContainers.clear();
 			int i = 0;
 			for (Map.Entry<Byte, Body> bodyEntry : bodies.entrySet()) {
 				SyncContainer container = syncContainers.get(i++);
