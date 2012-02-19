@@ -192,7 +192,12 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				@Override
 				public void run() {
 					sendStartGameMessageIfPossible();
-					startGameIfPossible();
+					PingPongGameActivity.this.runOnUpdateThread(new Runnable() {
+						@Override
+						public void run() {
+							startGameIfPossible();
+						}
+					});
 				}
 			}, 500, TimeUnit.MILLISECONDS);
 		} else {
@@ -383,7 +388,12 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				@Override
 				public void run() {
 					sendStartGameMessageIfPossible();
-					startGameIfPossible();
+					PingPongGameActivity.this.runOnUpdateThread(new Runnable() {
+						@Override
+						public void run() {
+							startGameIfPossible();
+						}
+					});
 				}
 			}, 500, TimeUnit.MILLISECONDS);
 		}
