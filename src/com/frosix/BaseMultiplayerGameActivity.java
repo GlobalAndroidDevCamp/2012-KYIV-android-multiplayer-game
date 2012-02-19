@@ -32,7 +32,7 @@ public abstract class BaseMultiplayerGameActivity extends BaseGameActivity
 		ConstantStorage, IConnectorListener<Connector<?>> {
 
 	private BluetoothAdapter mBluetoothAdapter;
-	private final MessagePool<IMessage> mMessagePool = new MessagePool<IMessage>();
+	protected final MessagePool<IMessage> mMessagePool = new MessagePool<IMessage>();
 	protected BluetoothDelegate bluetoothDelegate;
 
 	@Override

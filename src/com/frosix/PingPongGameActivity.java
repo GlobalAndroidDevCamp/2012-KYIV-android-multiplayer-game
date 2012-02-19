@@ -25,6 +25,8 @@ import org.anddev.andengine.entity.shape.Shape;
 import org.anddev.andengine.entity.sprite.AnimatedSprite;
 import org.anddev.andengine.extension.multiplayer.protocol.adt.message.EmptyMessage;
 import org.anddev.andengine.extension.multiplayer.protocol.adt.message.Message;
+import org.anddev.andengine.extension.multiplayer.protocol.client.connector.ServerConnector;
+import org.anddev.andengine.extension.multiplayer.protocol.server.connector.ClientConnector;
 import org.anddev.andengine.extension.multiplayer.protocol.shared.BluetoothSocketConnection;
 import org.anddev.andengine.extension.multiplayer.protocol.shared.Connector;
 import org.anddev.andengine.extension.physics.box2d.PhysicsConnector;
@@ -92,7 +94,6 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	
 	@SuppressWarnings("serial")
 	private Map<Short, Class<? extends ICommonMessage>> messageMap = new HashMap<Short, Class<? extends ICommonMessage>>() {{
-		put(FLAG_MESSAGE_TOUCH_CONTROL, TouchControlMessage.class);
 		put(FLAG_MESSAGE_SYNCHRONIZING , SynchronizingMessage.class);
 	}};
 	
@@ -338,14 +339,14 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			return;
 		}*/
 		if(pMessage instanceof SynchronizingMessage){
-			synchronizeGame((SynchronizingMessage)pMessage);
+			synchronizeGame((SynchronizingMessage)pMessage, pConnector);
 		}
 		
 		super.onHandleMessage(pConnector, pMessage);
 	}
 
 		
-	private void synchronizeGame(final SynchronizingMessage pMessage) {
+	private void synchronizeGame(final SynchronizingMessage pMessage, final Connector<BluetoothSocketConnection> connector) {
 		
 		this.runOnUpdateThread(new Runnable() {
 			
@@ -359,6 +360,12 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 					
 					b.setTransform(WORLD_WIDTH - position.x, WORLD_HEIGHT - position.y, 0);
 					b.setLinearVelocity(container.velocityI.mul(-1));
+				}
+				if (connector instanceof ClientConnector) {
+					((ClientConnector<BluetoothSocketConnection>)connector).getClientMessageReader().recycleMessage(pMessage);
+				}
+				if (connector instanceof ServerConnector) {
+					((ServerConnector<BluetoothSocketConnection>)connector).getServerMessageReader().recycleMessage(pMessage);
 				}
 			}
 			
