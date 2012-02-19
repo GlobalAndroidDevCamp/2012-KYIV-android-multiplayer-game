@@ -182,6 +182,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			}
 			
 		}));
+		commonBodies[0] = addFace(1);
 		if (!isClient()) {
 			mScene.registerUpdateHandler(new TimerHandler(0.1f, true, new ITimerCallback() {	
 				
@@ -199,7 +200,6 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				}
 			}));
 		}
-		commonBodies[0] = addFace(1);
 	}
 	
 	public void makeEffect(Body pBody , Vector2 pVector ){
