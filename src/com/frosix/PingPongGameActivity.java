@@ -95,7 +95,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private Map<Short, Class<? extends ICommonMessage>> messageMap = new HashMap<Short, Class<? extends ICommonMessage>>() {{
 		put(FLAG_MESSAGE_TOUCH_CONTROL, TouchControlMessage.class);
 		put(FLAG_MESSAGE_SYNCHRONIZING , SynchronizingMessage.class);
-		put((short) 0 ,StartGameMessage.class);
+		put(FLAG_MESSAGE_START ,StartGameMessage.class);
 	}};
 	
 	@Override
@@ -371,7 +371,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			pool.execute(new Runnable() {
 				@Override
 				public void run() {
-					sendMessage((StartGameMessage)getMessage((byte)0));
+					sendMessage((StartGameMessage)getMessage(FLAG_MESSAGE_START));
 				}
 			});
 		}
@@ -490,7 +490,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 
 		@Override
 		public short getFlag() {
-			return 0;
+			return FLAG_MESSAGE_START;
 		}
 
 		@Override
