@@ -419,7 +419,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 		public void set(Body[] bodies) {
 			for (byte i = 0; i < bodies.length; i++) {
-				SyncContainer container = syncContainers[i++];
+				SyncContainer container = syncContainers[i];
 				Body body = bodies[i];
 				container.positionI = body.getPosition();
 				container.velocityI = body.getLinearVelocity();
