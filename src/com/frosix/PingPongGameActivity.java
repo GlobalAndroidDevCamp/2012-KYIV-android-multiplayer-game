@@ -366,11 +366,15 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	}
 	
 	private void sendStartGameMessageIfPossible() {
-		sendMessage((StartGameMessage)getMessage((byte)0));
+		if (connectionEstablished && sceneLoaded) {
+			sendMessage((StartGameMessage)getMessage((byte)0));
+		}
 	}
 	
 	private void startGameIfPossible() {
-		makeEffect(commonBodies[0], new Vector2(0, 15));
+		if (sceneLoaded && startGameMessageReceived) {
+			makeEffect(commonBodies[0], new Vector2(0, 15));
+		}
 	}
 
 	public static class MovePlatformCommonMessage extends Message implements ICommonMessage {
@@ -476,7 +480,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		public Vector2 velocityI = new Vector2();
 	}
 	
-	private static class StartGameMessage extends CommonMessage{
+	public static class StartGameMessage extends CommonMessage {
 
 		@Override
 		public short getFlag() {
