@@ -82,7 +82,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	
 	Body globBbody;
 	
-	Map<Byte , Body> bodyToSync = new HashMap< Byte ,Body>();
+	Map<Byte, Body> bodyToSync = new HashMap<Byte ,Body>();
 	private Body ball;
 	
 	private static final FixtureDef FIXTURE_WALL = PhysicsFactory.createFixtureDef(1, 1f, 0f);
@@ -169,7 +169,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			}
 		});
 		
-		mScene.registerUpdateHandler(new TimerHandler(0.01f,true, new ITimerCallback() {	
+		mScene.registerUpdateHandler(new TimerHandler(5f,true, new ITimerCallback() {	
 			
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
@@ -434,9 +434,19 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		protected void onReadTransmissionData(DataInputStream pDataInputStream)
 				throws IOException {
 			for (SyncContainer container : syncContainers) {
-				container.setId(pDataInputStream.readByte());
-				container.getPositionI().set(pDataInputStream.readFloat(), pDataInputStream.readFloat());
-				container.getVelocityI().set(pDataInputStream.readFloat(), pDataInputStream.readFloat());
+				byte id = pDataInputStream.readByte();
+				Log.d("output", String.valueOf(id));
+				container.setId(id);
+				float x = pDataInputStream.readFloat();
+				Log.d("output", String.valueOf(x));
+				float y = pDataInputStream.readFloat();
+				Log.d("output", String.valueOf(y));
+				container.getPositionI().set(x, y);
+				x = pDataInputStream.readFloat();
+				Log.d("output", String.valueOf(x));
+				y = pDataInputStream.readFloat();
+				Log.d("output", String.valueOf(y));
+				container.getVelocityI().set(x, y);
 			}
 		}
 
@@ -445,12 +455,17 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				DataOutputStream pDataOutputStream) throws IOException {
 			for (SyncContainer container : syncContainers) {
 				pDataOutputStream.writeByte(container.getId());
+				Log.d("output", String.valueOf(container.getId()));
 				Vector2 position = container.getPositionI();
 				Vector2 velocity = container.getVelocityI();
 				pDataOutputStream.writeFloat(position.x);
+				Log.d("output", String.valueOf(position.x));
 				pDataOutputStream.writeFloat(position.y);
+				Log.d("output", String.valueOf(position.x));
 				pDataOutputStream.writeFloat(velocity.x);
+				Log.d("output", String.valueOf(position.x));
 				pDataOutputStream.writeFloat(velocity.y);
+				Log.d("output", String.valueOf(position.x));
 			}
 		}
 	}
