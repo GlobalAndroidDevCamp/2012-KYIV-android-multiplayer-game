@@ -182,6 +182,23 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			}
 			
 		}));
+		if (!isClient()) {
+			mScene.registerUpdateHandler(new TimerHandler(0.1f, true, new ITimerCallback() {	
+				
+				@Override
+				public void onTimePassed(TimerHandler pTimerHandler) {
+					final SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
+					syncMessageToSend.set(commonBodies);
+					syncMessageToSend.bodies = 1;
+					pool.execute(new Runnable() {
+						@Override
+						public void run() {
+							sendMessage(syncMessageToSend);
+						}
+					});
+				}
+			}));
+		}
 		commonBodies[0] = addFace(1);
 	}
 	
