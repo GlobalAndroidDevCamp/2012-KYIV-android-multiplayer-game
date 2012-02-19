@@ -101,7 +101,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private Map<Short, Class<? extends ICommonMessage>> messageMap = new HashMap<Short, Class<? extends ICommonMessage>>() {{
 		put(FLAG_MESSAGE_TOUCH_CONTROL, TouchControlMessage.class);
 		put(FLAG_MESSAGE_SYNCHRONIZING , SynchronizingMessage.class);
-			}};
+	}};
 	
 	@Override
 	public Engine onLoadEngine() {
@@ -173,7 +173,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			}
 		});
 		
-		mScene.registerUpdateHandler(new TimerHandler(0.05f, true, new ITimerCallback() {	
+		mScene.registerUpdateHandler(new TimerHandler(0.01f, true, new ITimerCallback() {	
 			
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
@@ -300,7 +300,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			Connector<BluetoothSocketConnection> pConnector,
 			ICommonMessage pMessage) throws IOException {
 		if (pMessage instanceof TouchControlMessage) {
-			Log.i("flag", "message handled TouchControlMessage ");
+			//Log.i("flag", "message handled TouchControlMessage ");
 			TouchControlMessage mMessage = (TouchControlMessage)pMessage;
 			float mX = ((TouchControlMessage) pMessage).x;
 			float mY =((TouchControlMessage) pMessage).y;
@@ -323,7 +323,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		}
 		
 		if(pMessage instanceof SynchronizingMessage){
-			Log.i("flag", "message handled SynchronizingMessage ");
+			//Log.i("flag", "message handled SynchronizingMessage ");
 			synchronizeGame((SynchronizingMessage)pMessage);
 			
 		}
@@ -346,7 +346,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 					Body b = enemyBodies[i];
 					SyncContainer container = pMessage.syncContainers[i];
 					Vector2 position = container.positionI;
-					b.setTransform(WORLD_WIDTH/ - position.x, WORLD_HEIGHT/32 - position.y, 0);
+					b.setTransform(WORLD_WIDTH - position.x, WORLD_HEIGHT - position.y, 0);
 					b.setLinearVelocity(container.velocityI.mul(-1));
 				}
 			}
