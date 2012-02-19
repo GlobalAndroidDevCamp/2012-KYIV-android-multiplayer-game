@@ -88,7 +88,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private static final FixtureDef FIXTURE_BALL = PhysicsFactory.createFixtureDef(1, 1f, 1f);
 	private static final byte selfBodyCount = 1;
 	private static final byte commonBodyCount = 1;
-	private ExecutorService pool;
+	private ScheduledExecutorService pool;
 	private boolean connectionEstablished = false;
 	private boolean sceneLoaded = false;
 	private boolean startGameMessageReceived = false;
@@ -169,7 +169,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				//moveEnemyPlatform(moveEnemyFlag , isEnemyRight);
 			}
 		});
-		pool = Executors.newSingleThreadExecutor();
+		pool = Executors.newSingleThreadScheduledExecutor();
 		mScene.registerUpdateHandler(new TimerHandler(0.04f, true, new ITimerCallback() {	
 			
 			@Override
@@ -188,9 +188,16 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		commonBodies[0] = addFace(1);
 		sceneLoaded = true;
 		if (isClient()) {
-			sendStartGameMessageIfPossible();
+			pool.schedule(new Runnable() {
+				@Override
+				public void run() {
+					sendStartGameMessageIfPossible();
+					startGameIfPossible();
+				}
+			}, 500, TimeUnit.MILLISECONDS);
+		} else {
+			startGameIfPossible();
 		}
-		startGameIfPossible();
 		Log.i("flag","onLoadComplete");
 	}
 	
@@ -335,7 +342,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		
 		if(pMessage instanceof StartGameMessage){
 			Log.i("flag","message handled StartGameMessage ");
-			//startGameMessageReceived = true;
+			startGameMessageReceived = true;
 			startGameIfPossible();
 		}
 		
@@ -372,7 +379,13 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		super.onStarted(pConnector);
 		connectionEstablished = true;
 		if (isClient()) {
-			sendStartGameMessageIfPossible();
+			pool.schedule(new Runnable() {
+				@Override
+				public void run() {
+					sendStartGameMessageIfPossible();
+					startGameIfPossible();
+				}
+			}, 500, TimeUnit.MILLISECONDS);
 		}
 	}
 	
