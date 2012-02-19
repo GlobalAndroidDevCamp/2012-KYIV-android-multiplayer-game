@@ -431,6 +431,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		protected void onReadTransmissionData(DataInputStream pDataInputStream)
 				throws IOException {
 			for (SyncContainer container : syncContainers) {
+				container.setId(pDataInputStream.readByte());
 				container.getPositionI().set(pDataInputStream.readFloat(), pDataInputStream.readFloat());
 				container.getVelocityI().set(pDataInputStream.readFloat(), pDataInputStream.readFloat());
 			}
@@ -440,6 +441,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		protected void onWriteTransmissionData(
 				DataOutputStream pDataOutputStream) throws IOException {
 			for (SyncContainer container : syncContainers) {
+				pDataOutputStream.writeByte(container.getId());
 				Vector2 position = container.getPositionI();
 				Vector2 velocity = container.getVelocityI();
 				pDataOutputStream.writeFloat(position.x);
@@ -451,13 +453,13 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	}
 	
 	private static class SyncContainer{
-		private int id;
+		private byte id;
 		private Vector2 positionI = new Vector2();
 		private Vector2 VelocityI = new Vector2();
-		public int getId() {
+		public byte getId() {
 			return id;
 		}
-		public void setId(int id) {
+		public void setId(byte id) {
 			this.id = id;
 		}
 		public Vector2 getPositionI() {
@@ -474,30 +476,5 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 		}
 		
 	}
-	
-	public static class EmptyMessage extends CommonMessage{
-
-		@Override
-		public short getFlag() {
-			
-			return 5;
-		}
-
-		@Override
-		protected void onReadTransmissionData(DataInputStream pDataInputStream)
-				throws IOException {
-			
-			
-		}
-
-		@Override
-		protected void onWriteTransmissionData(
-				DataOutputStream pDataOutputStream) throws IOException {
-			
-			
-		}
-		
-	}
-	
 	
 }
