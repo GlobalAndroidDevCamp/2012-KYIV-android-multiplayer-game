@@ -3,11 +3,10 @@ package com.frosix;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.anddev.andengine.engine.Engine;
 import org.anddev.andengine.engine.camera.Camera;
@@ -23,7 +22,6 @@ import org.anddev.andengine.entity.scene.Scene.IOnSceneTouchListener;
 import org.anddev.andengine.entity.shape.Shape;
 import org.anddev.andengine.entity.sprite.AnimatedSprite;
 import org.anddev.andengine.extension.multiplayer.protocol.adt.message.EmptyMessage;
-import org.anddev.andengine.extension.multiplayer.protocol.adt.message.IMessage;
 import org.anddev.andengine.extension.multiplayer.protocol.adt.message.Message;
 import org.anddev.andengine.extension.multiplayer.protocol.shared.BluetoothSocketConnection;
 import org.anddev.andengine.extension.multiplayer.protocol.shared.Connector;
@@ -37,23 +35,15 @@ import org.anddev.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextur
 import org.anddev.andengine.opengl.texture.region.TiledTextureRegion;
 
 import android.util.Log;
-import android.util.SparseArray;
-import android.view.Display;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.Contact;
-import com.badlogic.gdx.physics.box2d.ContactImpulse;
-import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.frosix.protocol.adt.message.CommonMessage;
 import com.frosix.protocol.adt.message.ICommonMessage;
-import com.frosix.protocol.adt.message.MoveSpriteCommonMessage;
 import com.frosix.protocol.adt.message.TouchControlMessage;
 
-import static java.lang.Math.*;
 public class PingPongGameActivity extends BaseMultiplayerGameActivity implements IOnSceneTouchListener {
 	
 	private static final float CAMERA_HEIGHT = 800;
@@ -77,13 +67,13 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private boolean moveSelfFlag =false;
 	private boolean isSelfRight =false;
 	
-	private boolean moveEnemyFlag =false;
+	/*private boolean moveEnemyFlag =false;
 	private boolean isEnemyRight =false;
 	
 		
 	private boolean isSceneLoaded = false ;
 	private boolean isMessageHandled = false ;
-	private boolean onStartedflag = false;
+	private boolean onStartedflag = false;*/
 	
 	Body globBbody;
 	
@@ -96,6 +86,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	private static final FixtureDef FIXTURE_BALL = PhysicsFactory.createFixtureDef(1, 1f, 1f);
 	private static final byte selfBodyCount = 1;
 	private static final byte commonBodyCount = 1;
+	private ExecutorService pool;
 	
 	@SuppressWarnings("serial")
 	private Map<Short, Class<? extends ICommonMessage>> messageMap = new HashMap<Short, Class<? extends ICommonMessage>>() {{
@@ -105,16 +96,12 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	
 	@Override
 	public Engine onLoadEngine() {
-		Display display = getWindowManager().getDefaultDisplay();
-		  this.mCamera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
-		  final EngineOptions engineOptions = new EngineOptions(true,
-					ScreenOrientation.PORTRAIT, new RatioResolutionPolicy(
-							CAMERA_WIDTH, CAMERA_HEIGHT), mCamera);
-			
-		   		    
-			final Engine mEngine = new Engine(engineOptions);
-		
-			return mEngine;
+		this.mCamera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
+		final EngineOptions engineOptions = new EngineOptions(true,
+				ScreenOrientation.PORTRAIT, new RatioResolutionPolicy(
+						CAMERA_WIDTH, CAMERA_HEIGHT), mCamera);
+		final Engine mEngine = new Engine(engineOptions);		
+		return mEngine;
 	}
 
 	@Override
@@ -172,14 +159,19 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				//moveEnemyPlatform(moveEnemyFlag , isEnemyRight);
 			}
 		});
-		
+		pool = Executors.newSingleThreadExecutor();
 		mScene.registerUpdateHandler(new TimerHandler(0.01f, true, new ITimerCallback() {	
 			
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
-				SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
+				final SynchronizingMessage syncMessageToSend = (SynchronizingMessage)getMessage(FLAG_MESSAGE_SYNCHRONIZING);
 				syncMessageToSend.set(selfBodies);
-				sendMessage(syncMessageToSend);	
+				pool.execute(new Runnable() {
+					@Override
+					public void run() {
+						sendMessage(syncMessageToSend);
+					}
+				});
 			}
 			
 		}));
@@ -189,14 +181,14 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	public void makeEffect(Body pBody , Vector2 pVector ){
 		pBody.setLinearVelocity(pVector);
 		writeVectorToLog(pVector ," make effect");
-	    };
+	};
 	
     public void writeVectorToLog( Vector2 pVector , String pStr){
     	Log.i("flag", pStr + "  pVector=" + pVector.x  +" y:" +pVector.y );
     }
     
     public void addControl(){
-		float rectWidth = 150;
+		float rectWidth = 120;
 		float rectHeight = 20;
 		
 		selfRect = new Rectangle(0, 0 , rectWidth, rectHeight);
@@ -229,6 +221,13 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				
 		this.mScene.attachChild(face);
 		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(face, body, true, true));
+		mScene.registerUpdateHandler(new TimerHandler(3, new ITimerCallback() {
+			
+			@Override
+			public void onTimePassed(TimerHandler pTimerHandler) {
+				makeEffect(body, new Vector2(0, 15));
+			}
+		}));
 		return body;
 		
 		
@@ -299,7 +298,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	public void onHandleMessage(
 			Connector<BluetoothSocketConnection> pConnector,
 			ICommonMessage pMessage) throws IOException {
-		if (pMessage instanceof TouchControlMessage) {
+		/*if (pMessage instanceof TouchControlMessage) {
 			//Log.i("flag", "message handled TouchControlMessage ");
 			TouchControlMessage mMessage = (TouchControlMessage)pMessage;
 			float mX = ((TouchControlMessage) pMessage).x;
@@ -320,14 +319,10 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			}
 			
 			return;
-		}
-		
+		}*/
 		if(pMessage instanceof SynchronizingMessage){
-			//Log.i("flag", "message handled SynchronizingMessage ");
 			synchronizeGame((SynchronizingMessage)pMessage);
-			
 		}
-		
 		if(pMessage instanceof EmptyMessage){
 			Log.i("flag","message handled EmptyMessage ");
 		}
@@ -421,8 +416,10 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 			for (byte i = 0; i < bodies.length; i++) {
 				SyncContainer container = syncContainers[i];
 				Body body = bodies[i];
-				container.positionI = body.getPosition();
-				container.velocityI = body.getLinearVelocity();
+				Vector2 position = body.getPosition();
+				container.positionI.set(position.x, position.y);
+				Vector2 velocity = body.getLinearVelocity();
+				container.velocityI.set(velocity.x, velocity.y);
 			}
 		}
 		
