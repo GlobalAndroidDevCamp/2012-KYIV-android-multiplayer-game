@@ -57,6 +57,10 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 	
 	private static final float CAMERA_HEIGHT = 800;
 	private static final float CAMERA_WIDTH = 480;
+	
+	private static final float WORLD_HEIGHT = 25;
+	private static final float WORLD_WIDTH = 15;
+	
 	private Camera mCamera;
 	private BitmapTextureAtlas mBitmapTextureAtlas;
 	private TiledTextureRegion mCircleFaceTextureRegion;
@@ -334,6 +338,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 
 		
 	private void synchronizeGame(final SynchronizingMessage pMessage) {
+		
 		this.runOnUpdateThread(new Runnable() {
 			
 			@Override
@@ -341,7 +346,7 @@ public class PingPongGameActivity extends BaseMultiplayerGameActivity implements
 				for (SyncContainer container : pMessage.syncContainers) {
 					Body b = enemyBodies.get(container.getId());
 					Vector2 position = container.getPositionI();
-					b.setTransform(CAMERA_WIDTH/32 - position.x, CAMERA_HEIGHT/32 - position.y, 0);
+					b.setTransform(WORLD_WIDTH/ - position.x, WORLD_HEIGHT/32 - position.y, 0);
 					b.setLinearVelocity(container.getVelocityI().mul(-1));
 				}
 			}
